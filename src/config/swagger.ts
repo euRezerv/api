@@ -16,6 +16,14 @@ const options: swaggerJSDoc.Options = {
         cookieAuth: [],
       },
     ],
+    tags: [
+      { name: "Auth", description: "Authentication and Authorization" },
+      { name: "Users", description: "User-related operations" },
+      { name: "Companies", description: "Company-related operations" },
+      { name: "Resources", description: "Resource-related operations" },
+      { name: "Services", description: "Service-related operations" },
+      { name: "Bookings", description: "Booking-related operations" },
+    ],
   },
   apis: ["src/routes/v1/**/*.ts"],
 };
