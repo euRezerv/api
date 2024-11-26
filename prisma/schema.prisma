@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
@@ -12,17 +12,152 @@ datasource db {
 }
 
 model User {
-  id                    String    @id @default(cuid())
-  firstName             String
-  lastName              String
-  email                 String    @unique
-  isEmailVerified       Boolean   @default(false)
-  phoneNumberCountryISO String
-  phoneNumber           String
-  isPhoneVerified       Boolean   @default(false)
-  password              String
-  createdAt             DateTime  @default(now()) @db.Timestamptz(6)
-  // updatedAt             DateTime  @updatedAt @db.Timestamptz(6)
+  id                      String                 @id @default(cuid())
+  firstName               String
+  lastName                String
+  email                   String                 @unique
+  isEmailVerified         Boolean                @default(false)
+  phoneNumberCountryISO   String
+  phoneNumber             String
+  isPhoneVerified         Boolean                @default(false)
+  password                String
+  isSystemAdmin           Boolean                @default(false)
+  companies               CompanyEmployee[]
+  bookings                BookingCustomer[]
+  createdCompanies        Company[]              @relation("CreatedCompanies")
+  updatedCompaniesHistory CompanyUpdateHistory[]
+  updatedAt               DateTime               @updatedAt @db.Timestamptz(6)
+  createdAt               DateTime               @default(now()) @db.Timestamptz(6)
+  deletedAt               DateTime?              @db.Timestamptz(6)
 
   @@unique([phoneNumberCountryISO, phoneNumber])
+}
+
+model Company {
+  id            String                 @id @default(cuid())
+  name          String
+  country       String
+  county        String
+  city          String
+  street        String
+  postalCode    String
+  latitude      Float
+  longitude     Float
+  employees     CompanyEmployee[]
+  resources     Resource[]
+  createdAt     DateTime               @default(now()) @db.Timestamptz(6)
+  createdById   String
+  createdBy     User                   @relation("CreatedCompanies", fields: [createdById], references: [id])
+  updateHistory CompanyUpdateHistory[]
+  deletedAt     DateTime?              @db.Timestamptz(6)
+}
+
+enum CompanyEmployeeRole {
+  REGULAR
+  MANAGER
+}
+
+model CompanyEmployee {
+  id                String             @id @default(cuid())
+  companyId         String
+  company           Company            @relation(fields: [companyId], references: [id])
+  employeeId        String
+  employee          User               @relation(fields: [employeeId], references: [id])
+  role              CompanyEmployeeRole
+  assignedResources ResourceEmployee[]
+
+  @@unique([companyId, employeeId])
+}
+
+model CompanyUpdateHistory {
+  id            String   @id @default(cuid())
+  modifications Json     @db.Json
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id])
+  updatedById   String
+  updatedBy     User     @relation(fields: [updatedById], references: [id])
+  updatedAt     DateTime @default(now()) @db.Timestamptz(6)
+}
+
+enum ResourceCategory {
+  //ToDo: Add more categories
+  SPORT_FIELD
+}
+
+model Resource {
+  id                      String                 @id @default(cuid())
+  name                    String
+  description             String
+  availabilityTime        ResourceAvailability[]
+  category                ResourceCategory
+  companyId               String
+  company                 Company                @relation(fields: [companyId], references: [id])
+  assignedEmployees       ResourceEmployee[]
+  services                Service[]
+  requiresBookingApproval Boolean                @default(false)
+  createdAt               DateTime               @default(now()) @db.Timestamptz(6)
+  deletedAt               DateTime?              @db.Timestamptz(6)
+}
+
+model ResourceAvailability {
+  id         String   @id @default(cuid())
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id])
+  dayOfWeek  Int /// 0 = Monday, 1 = Tuesday, ...
+  startTime  String /// "09:00"
+  endTime    String /// "18:00"
+}
+
+model ResourceEmployee {
+  id         String          @id @default(cuid())
+  resourceId String
+  resource   Resource        @relation(fields: [resourceId], references: [id])
+  employeeId String
+  employee   CompanyEmployee @relation(fields: [employeeId], references: [id])
+
+  @@unique([resourceId, employeeId])
+}
+
+model Service {
+  id              String    @id @default(cuid())
+  name            String
+  description     String
+  price           Float
+  durationSeconds Int
+  resourceId      String
+  resource        Resource  @relation(fields: [resourceId], references: [id])
+  bookings        Booking[]
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(6)
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  CANCELLED
+  COMPLETED
+}
+
+model Booking {
+  id          String            @id @default(cuid())
+  serviceId   String
+  service     Service           @relation(fields: [serviceId], references: [id])
+  customers   BookingCustomer[]
+  startTime   DateTime
+  endTime     DateTime
+  status      BookingStatus     @default(PENDING)
+  isCancelled Boolean           @default(false)
+  createdAt   DateTime          @default(now()) @db.Timestamptz(6)
+}
+
+model BookingCustomer {
+  id             String  @id @default(cuid())
+  notes          String?
+  bookingId      String
+  booking        Booking @relation(fields: [bookingId], references: [id])
+  customerId     String
+  customer       User    @relation(fields: [customerId], references: [id])
+  isMainCustomer Boolean /// Indicate if the customer is the one who made the booking
+
+  @@unique([bookingId, customerId])
 }
