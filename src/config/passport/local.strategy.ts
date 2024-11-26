@@ -1,7 +1,7 @@
+import argon2 from "argon2";
 import { PassportStatic } from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import prisma from "@utils/prisma";
-import { validatePassword } from "@services/auth/auth.service";
 import { normalizeError } from "@utils/errors";
 import { EMAIL_REGEX } from "@utils/regex";
 import { User } from "@prisma/client";
@@ -51,7 +51,7 @@ export const localStrategy = (passport: PassportStatic) => {
           return done(null, false, { message: "User not found." });
         }
 
-        const isValid = await validatePassword(password, user.password);
+        const isValid = await argon2.verify(user.password, password);
         if (!isValid) {
           return done(null, false, { message: "Invalid password." });
         }

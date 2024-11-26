@@ -2,7 +2,7 @@ import express, { Express } from "express";
 import dotenv from "dotenv";
 import setupSession from "src/config/session";
 import setupSwagger from "src/config/swagger";
-import setupPassport from "src/middlewares/passport";
+import setupPassport from "src/config/passport";
 import routes from "./routes/v1/index.route";
 import log from "@utils/logger";
 
