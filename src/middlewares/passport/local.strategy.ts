@@ -5,7 +5,7 @@ import { validatePassword } from "@services/auth/auth.service";
 import { normalizeError } from "@utils/errors";
 import { EMAIL_REGEX } from "@utils/regex";
 import { User } from "@prisma/client";
-import parsePhoneNumber, { isValidNumber } from "libphonenumber-js";
+import parsePhoneNumber from "libphonenumber-js";
 
 export const localStrategy = (passport: PassportStatic) => {
   passport.use(
