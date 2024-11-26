@@ -1,13 +1,9 @@
-import { Request } from "express";
-
-export type RequestWithBody<B> = Request<never, never, B>;
-
-export type AuthLoginRequestType = {
+export type LoginRequestType = {
   identifier: string;
   password: string;
 };
 
-export type AuthRegisterRequestType = {
+export type RegisterRequestType = {
   firstName: string;
   lastName: string;
   email: string;

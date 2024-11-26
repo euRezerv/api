@@ -46,6 +46,8 @@ export const validateRegister: RequestHandler[] = [
     .not()
     .isEmpty({ ignore_whitespace: true })
     .withMessage("Phone number prefix is required.")
+    .isString()
+    .withMessage("Phone number prefix must be a string.")
     .custom((prefixISO) => isUppercase(prefixISO))
     .withMessage("Phone number prefix must be uppercase.")
     .custom((prefixISO) => isSupportedCountry(prefixISO))
@@ -54,6 +56,8 @@ export const validateRegister: RequestHandler[] = [
     .not()
     .isEmpty({ ignore_whitespace: true })
     .withMessage("Phone number is required.")
+    .isString()
+    .withMessage("Phone number must be a string.")
     .custom((value, { req }) => {
       return isValidPhoneNumber(req.body.phoneNumber, req.body.phoneNumberCountryISO);
     })

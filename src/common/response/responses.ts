@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { StandardErrorType, StandardResponseType } from "./types";
+import { StandardErrorType, StandardResponseType } from "./types/types";
 
 type StandardResponseParamsType<R> = {
   isSuccess: boolean;

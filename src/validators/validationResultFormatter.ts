@@ -1,4 +1,4 @@
-import { StandardErrorType } from "@common/response/types";
+import { StandardErrorType } from "@common/response/types/types";
 import { Request } from "express";
 import { FieldValidationError, ValidationError, validationResult } from "express-validator";
 
@@ -11,6 +11,7 @@ const validationErrorFormatter = (err: ValidationError): StandardErrorType => {
     return {
       message: err.msg,
       field: err.path,
+      fieldType: err.location,
       value: err.value,
     };
   }
