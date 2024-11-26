@@ -6,7 +6,7 @@ import log from "@utils/logger";
 export default () => {
   localStrategy(passport);
 
-  passport.serializeUser((user: any, done) => {
+  passport.serializeUser((user: Express.User, done) => {
     done(null, user.id);
   });
 
