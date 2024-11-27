@@ -40,7 +40,7 @@ export const getCompanies = async (
     res
       .status(500)
       .json(
-        standardResponse({ isSuccess: false, res, message: "Failed to fetch comapnies.", errors: normalizeError(error) })
+        standardResponse({ isSuccess: false, res, message: "Failed to fetch companies.", errors: normalizeError(error) })
       );
     return;
   }
