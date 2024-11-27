@@ -1,4 +1,5 @@
-import { isAuthenticated } from "@services/auth/auth.service";
+import { isAuthenticated } from "@services/auth.service";
+import { addPagination } from "@services/pagination.service";
 import { Router } from "express";
 import { createCompany, getCompanies, getCompanyById } from "src/controllers/companies.controller";
 import { validateCreateCompany, validateGetCompanies, validateGetCompanyById } from "src/validators/companies.validator";
@@ -25,8 +26,20 @@ const router = Router();
  *         required: false
  *         schema:
  *           type: string
- *           enum: [MANAGER, EMPLOYEE]
+ *           enum: [MANAGER, REGULAR]
  *         description: Employee role in the company
+ *       - in: query
+ *         name: pageSize
+ *         required: false
+ *         schema:
+ *           type: int
+ *         description: Page size
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: int
+ *         description: Page number
  *     responses:
  *       200:
  *         description: Success
@@ -39,7 +52,7 @@ const router = Router();
  *       500:
  *         description: Internal server error
  */
-router.get("/", isAuthenticated.local, validateGetCompanies, getCompanies);
+router.get("/", isAuthenticated.local, addPagination, validateGetCompanies, getCompanies);
 
 /**
  * @swagger

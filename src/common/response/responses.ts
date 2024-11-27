@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { StandardErrorType, StandardResponseType } from "./types/types";
+import { PaginationResponseType, StandardErrorType, StandardResponseType } from "./types/types";
 
 type StandardResponseParamsType<R> = {
   isSuccess: boolean;
@@ -50,3 +50,14 @@ export function standardResponse<R extends { [key: string]: any }>({
     timestamp: new Date().toISOString(),
   };
 }
+
+export const getPaginationResponse = (page: number, pageSize: number, totalCount: number): PaginationResponseType => {
+  return {
+    pagination: {
+      currentPage: page,
+      pageSize,
+      totalCount,
+      totalPages: Math.ceil(totalCount / pageSize),
+    },
+  };
+};

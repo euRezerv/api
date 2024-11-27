@@ -14,3 +14,12 @@ export type StandardResponseType<R extends { [key: string]: any }> = {
   errors?: StandardErrorType[];
   timestamp: string;
 };
+
+export type PaginationResponseType = {
+  pagination: {
+    totalCount: number;
+    currentPage: number;
+    totalPages: number;
+    pageSize: number;
+  };
+};

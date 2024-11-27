@@ -1,6 +1,6 @@
 import { CreateCompanyRequestType, GetCompaniesRequestType } from "@common/request/types/companies";
 import { RequestWithBody, RequestWithQuery } from "@common/request/types/types";
-import { standardResponse } from "@common/response/responses";
+import { standardResponse, getPaginationResponse } from "@common/response/responses";
 import {
   CreateCompanyResponseType,
   GetCompaniesResponseType,
@@ -17,29 +17,24 @@ export const getCompanies = async (
   res: Response<GetCompaniesResponseType>
 ) => {
   const { employeeId, employeeRole } = req.query;
+  const { skip, take, page, pageSize } = req.pagination!;
+
+  const constraints = {
+    ...(employeeId &&
+      employeeRole && {
+        employees: {
+          some: {
+            employeeId: employeeId,
+            role: employeeRole,
+          },
+        },
+      }),
+    deletedAt: null,
+  };
 
   let companies = [];
-
   try {
-    if (employeeId && employeeRole) {
-      companies = await prisma.company.findMany({
-        where: {
-          employees: {
-            some: {
-              employeeId: employeeId,
-              role: employeeRole,
-            },
-          },
-          deletedAt: null,
-        },
-      });
-    } else {
-      companies = await prisma.company.findMany({
-        where: {
-          deletedAt: null,
-        },
-      });
-    }
+    companies = await prisma.company.findMany({ where: constraints, skip, take });
   } catch (error) {
     log.error(error);
     res
@@ -47,6 +42,22 @@ export const getCompanies = async (
       .json(
         standardResponse({ isSuccess: false, res, message: "Failed to fetch comapnies.", errors: normalizeError(error) })
       );
+    return;
+  }
+
+  let totalCount;
+  try {
+    totalCount = await prisma.company.count({ where: constraints });
+  } catch (error) {
+    log.error(error);
+    res.status(500).json(
+      standardResponse({
+        isSuccess: false,
+        res,
+        message: "Failed to fetch total company count.",
+        errors: normalizeError(error),
+      })
+    );
     return;
   }
 
@@ -68,6 +79,7 @@ export const getCompanies = async (
           createdById: company.createdById,
           createdAt: company.createdAt.toISOString(),
         })),
+        ...getPaginationResponse(page, pageSize, totalCount),
       },
     })
   );
