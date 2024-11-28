@@ -1,4 +1,4 @@
-import { SwaggerDocsManager } from "@utils/swaggerDocs";
+import { HTTP_RESPONSES, jsonRequestBody, SwaggerDocsManager } from "@utils/swaggerDocs";
 import { validateLogin, validateRegister } from "../../../validators/auth.validator";
 import { Router } from "express";
 import { loginUser, registerUser } from "src/controllers/users/auth.controller";
@@ -12,25 +12,15 @@ AuthDocs.add({
     post: {
       summary: "Login a user",
       tags: ["Auth"],
-      requestBody: {
-        required: true,
-        content: {
-          "application/json": {
-            schema: {
-              type: "object",
-              properties: {
-                identifier: { type: "string" },
-                password: { type: "string" },
-              },
-            },
-          },
-        },
-      },
+      requestBody: jsonRequestBody({
+        identifier: { type: "string", description: "Email or phone number" },
+        password: { type: "string" },
+      }),
       responses: {
-        200: { description: "Logged in successfully" },
-        400: { description: "Validation error" },
-        401: { description: "Incorrect credentials" },
-        500: { description: "Internal server error" },
+        ...HTTP_RESPONSES.OK200({ description: "Logged in successfully" }),
+        ...HTTP_RESPONSES.BAD_REQUEST400({ description: "Validation error" }),
+        ...HTTP_RESPONSES.UNAUTHORIZED401({ description: "Incorrect credentials" }),
+        ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500(),
       },
     },
   },
@@ -42,29 +32,19 @@ AuthDocs.add({
     post: {
       summary: "Register a new user",
       tags: ["Auth"],
-      requestBody: {
-        required: true,
-        content: {
-          "application/json": {
-            schema: {
-              type: "object",
-              properties: {
-                firstName: { type: "string" },
-                lastName: { type: "string" },
-                email: { type: "string" },
-                phoneNumberCountryISO: { type: "string" },
-                phoneNumber: { type: "string" },
-                password: { type: "string" },
-              },
-            },
-          },
-        },
-      },
+      requestBody: jsonRequestBody({
+        firstName: { type: "string" },
+        lastName: { type: "string" },
+        email: { type: "string" },
+        phoneNumberCountryISO: { type: "string" },
+        phoneNumber: { type: "string" },
+        password: { type: "string" },
+      }),
       responses: {
-        201: { description: "Registered successfully" },
-        400: { description: "Validation error" },
-        409: { description: "User already exists" },
-        500: { description: "Internal server error" },
+        ...HTTP_RESPONSES.CREATED201({ description: "Registered successfully" }),
+        ...HTTP_RESPONSES.BAD_REQUEST400({ description: "Validation error" }),
+        ...HTTP_RESPONSES.CONFLICT409({ description: "User already exists" }),
+        ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500(),
       },
     },
   },
