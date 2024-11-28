@@ -3,6 +3,8 @@ import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import { Express } from "express";
 import { version } from "../../package.json";
+import { CompaniesDocs } from "src/routes/v1/companies/companies.route";
+import { AuthDocs } from "src/routes/v1/users/auth.route";
 
 const options: swaggerJSDoc.Options = {
   definition: {
@@ -11,11 +13,6 @@ const options: swaggerJSDoc.Options = {
       title: "euRezerv API",
       version: version,
     },
-    security: [
-      {
-        cookieAuth: [],
-      },
-    ],
     tags: [
       { name: "Auth", description: "Authentication and Authorization" },
       { name: "Users", description: "User-related operations" },
@@ -24,6 +21,10 @@ const options: swaggerJSDoc.Options = {
       { name: "Services", description: "Service-related operations" },
       { name: "Bookings", description: "Booking-related operations" },
     ],
+    paths: {
+      ...AuthDocs.getDocs(),
+      ...CompaniesDocs.getDocs(),
+    },
   },
   apis: ["src/routes/v1/**/*.ts"],
 };
