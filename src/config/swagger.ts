@@ -5,6 +5,7 @@ import { Express } from "express";
 import { version } from "../../package.json";
 import { CompaniesDocs } from "src/routes/v1/companies/companies.route";
 import { AuthDocs } from "src/routes/v1/users/auth.route";
+import { UsersDocs } from "src/routes/v1/users/users.route";
 
 const options: swaggerJSDoc.Options = {
   definition: {
@@ -23,6 +24,7 @@ const options: swaggerJSDoc.Options = {
     ],
     paths: {
       ...AuthDocs.getDocs(),
+      ...UsersDocs.getDocs(),
       ...CompaniesDocs.getDocs(),
     },
   },

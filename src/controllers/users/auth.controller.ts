@@ -19,27 +19,27 @@ export const loginUser = (req: RequestWithBody<LoginRequestType>, res: Response<
       if (err) {
         return res
           .status(500)
-          .json(standardResponse({ isSuccess: false, res, message: "Something went wrong.", errors: err }));
+          .json(standardResponse({ isSuccess: false, res, message: "Something went wrong", errors: err }));
       }
 
       if (!user) {
         return res
           .status(401)
-          .json(standardResponse({ isSuccess: false, res, message: "Failed to login.", errors: info?.message }));
+          .json(standardResponse({ isSuccess: false, res, message: "Failed to login", errors: info?.message }));
       }
 
       req.logIn(user, (loginErr) => {
         if (loginErr) {
           return res
             .status(500)
-            .json(standardResponse({ isSuccess: false, res, message: "Something went wrong.", errors: loginErr }));
+            .json(standardResponse({ isSuccess: false, res, message: "Something went wrong", errors: loginErr }));
         }
 
         return res.json(
           standardResponse({
             isSuccess: true,
             res,
-            message: "Logged in successfully.",
+            message: "Logged in successfully",
             data: {
               user: {
                 id: user.id,
@@ -64,12 +64,12 @@ export const registerUser = async (req: RequestWithBody<RegisterRequestType>, re
     if (existingUserByEmail) {
       res
         .status(409)
-        .json(standardResponse({ isSuccess: false, res, message: "An account with these details already exists." }));
+        .json(standardResponse({ isSuccess: false, res, message: "An account with these details already exists" }));
       return;
     }
 
     if (!isSupportedCountry(phoneNumberCountryISO)) {
-      throw new Error("Phone number prefix is invalid.");
+      throw new Error("Phone number prefix is invalid");
     }
 
     const parsedPhoneNumber = parsePhoneNumberWithError(phoneNumber, phoneNumberCountryISO);
@@ -84,7 +84,7 @@ export const registerUser = async (req: RequestWithBody<RegisterRequestType>, re
     if (existingUserByPhoneNumber) {
       res
         .status(409)
-        .json(standardResponse({ isSuccess: false, res, message: "An account with these details already exists." }));
+        .json(standardResponse({ isSuccess: false, res, message: "An account with these details already exists" }));
       return;
     }
 
@@ -102,14 +102,14 @@ export const registerUser = async (req: RequestWithBody<RegisterRequestType>, re
       })
       .catch((error) => {
         log.error(error);
-        throw new Error("Failed to create user.");
+        throw new Error("Failed to create user");
       });
 
     res.status(201).json(
       standardResponse({
         isSuccess: true,
         res,
-        message: "User registered successfully.",
+        message: "User registered successfully",
         data: {
           user: {
             id: newUser.id,
@@ -126,6 +126,6 @@ export const registerUser = async (req: RequestWithBody<RegisterRequestType>, re
     log.error(error);
     res
       .status(500)
-      .json(standardResponse({ isSuccess: false, res, message: "Something went wrong.", errors: normalizeError(error) }));
+      .json(standardResponse({ isSuccess: false, res, message: "Something went wrong", errors: normalizeError(error) }));
   }
 };

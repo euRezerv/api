@@ -1,5 +1,9 @@
 import { CompanyEmployeeRole } from "@prisma/client";
 
+export type GetCompanyByIdRequestType = {
+  id: string;
+};
+
 export type GetCompaniesRequestType = {
   employeeId?: string;
   employeeRole?: CompanyEmployeeRole;
