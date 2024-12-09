@@ -1,7 +1,7 @@
 import { HTTP_RESPONSES, jsonRequestBody, SwaggerDocsManager } from "@utils/swaggerDocs";
 import { validateLogin, validateRegister } from "../../../validators/auth.validator";
 import { Router } from "express";
-import { loginUser, registerUser } from "src/controllers/users/auth.controller";
+import { loginUser, logoutUser, registerUser } from "src/controllers/users/auth.controller";
 
 const router = Router();
 const AuthDocs = new SwaggerDocsManager();
@@ -20,6 +20,21 @@ AuthDocs.add({
         ...HTTP_RESPONSES.OK200({ description: "Logged in successfully" }),
         ...HTTP_RESPONSES.BAD_REQUEST400({ description: "Validation error" }),
         ...HTTP_RESPONSES.UNAUTHORIZED401({ description: "Incorrect credentials" }),
+        ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500(),
+      },
+    },
+  },
+});
+
+router.post("/logout", logoutUser);
+AuthDocs.add({
+  "/v1/users/auth/logout": {
+    post: {
+      summary: "Logout a user",
+      tags: ["Auth"],
+      responses: {
+        ...HTTP_RESPONSES.OK200({ description: "Logged out successfully" }),
+        ...HTTP_RESPONSES.BAD_REQUEST400({ description: "User is not logged in" }),
         ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500(),
       },
     },

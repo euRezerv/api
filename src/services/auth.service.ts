@@ -6,7 +6,7 @@ export const isAuthenticated = {
     if (req.isAuthenticated()) {
       return next();
     } else {
-      res.status(401).json(standardResponse({ isSuccess: false, res, message: "Unauthorized." }));
+      res.status(401).json(standardResponse({ isSuccess: false, res, message: "Unauthorized" }));
     }
   },
 };

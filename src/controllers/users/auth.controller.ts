@@ -1,4 +1,4 @@
-import { NextFunction, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { User } from "@prisma/client";
 import { LoginResponseType, RegisterResponseType } from "@common/response/types/userAuth";
 import { LoginRequestType, RegisterRequestType } from "@common/request/types/userAuth";
@@ -54,6 +54,24 @@ export const loginUser = (req: RequestWithBody<LoginRequestType>, res: Response<
       });
     }
   )(req, res, next);
+};
+
+export const logoutUser = (req: Request, res: Response) => {
+  if (!req.isAuthenticated()) {
+    res.status(400).json(standardResponse({ isSuccess: false, res, message: "User is not logged in" }));
+    return;
+  }
+
+  req.logout((err) => {
+    if (err) {
+      log.error(err);
+      return res
+        .status(500)
+        .json(standardResponse({ isSuccess: false, res, message: "Failed to logout", errors: normalizeError(err) }));
+    }
+  });
+
+  res.json(standardResponse({ isSuccess: true, res, message: "Logged out successfully" }));
 };
 
 export const registerUser = async (req: RequestWithBody<RegisterRequestType>, res: Response<RegisterResponseType>) => {
