@@ -1,11 +1,11 @@
 import { NextFunction, Request, Response, RequestHandler } from "express";
 import { check } from "express-validator";
 import validationResultFormatter from "./validationResultFormatter";
-import { isObjectEmpty } from "@utils/objects";
-import { standardResponse } from "@common/response/responses";
+import { isObjectEmpty } from "@toolbox/common/objects";
+import { standardResponse } from "@utils/responses";
 import { EMAIL_REGEX } from "@utils/regex";
 import { isSupportedCountry, isValidPhoneNumber } from "libphonenumber-js";
-import { isUppercase } from "@utils/strings";
+import { isUppercase } from "@toolbox/common/strings";
 
 export const validateLogin: RequestHandler[] = [
   check("identifier").not().isEmpty({ ignore_whitespace: true }).withMessage("Identifier is required."),

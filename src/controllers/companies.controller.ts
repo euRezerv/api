@@ -2,16 +2,16 @@ import {
   CreateCompanyRequestType,
   GetCompaniesRequestType,
   GetCompanyByIdRequestType,
-} from "@common/request/types/companies";
-import { RequestWithBody, RequestWithParams, RequestWithQuery } from "@common/request/types/types";
-import { standardResponse, getPaginationResponse } from "@common/response/responses";
+} from "@toolbox/request/types/companies";
+import { RequestWithBody, RequestWithParams, RequestWithQuery } from "@toolbox/request/types/types";
+import { standardResponse, getPaginationResponse } from "@utils/responses";
 import {
   CreateCompanyResponseType,
   GetCompaniesResponseType,
   GetCompanyByIdResponseType,
-} from "@common/response/types/companies";
+} from "@toolbox/response/types/companies";
 import { CompanyEmployeeRole } from "@prisma/client";
-import { normalizeError } from "@utils/errors";
+import { normalizeError } from "@toolbox/common/errors";
 import log from "@utils/logger";
 import prisma from "@utils/prisma";
 import { Response } from "express";

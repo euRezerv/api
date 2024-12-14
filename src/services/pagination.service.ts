@@ -1,8 +1,8 @@
-import { PaginationParamsType, RequestWithQuery } from "@common/request/types/types";
-import { standardResponse } from "@common/response/responses";
-import { normalizeError } from "@utils/errors";
+import { PaginationParamsType, RequestWithQuery } from "@toolbox/request/types/types";
+import { standardResponse } from "@utils/responses";
+import { normalizeError } from "@toolbox/common/errors";
 import log from "@utils/logger";
-import { isObjectEmpty } from "@utils/objects";
+import { isObjectEmpty } from "@toolbox/common/objects";
 import { Response, NextFunction, Request } from "express";
 import { paginationValidations } from "src/validators/pagination.validator";
 import validationResultFormatter from "src/validators/validationResultFormatter";

@@ -2,7 +2,7 @@ import argon2 from "argon2";
 import { PassportStatic } from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import prisma from "@utils/prisma";
-import { normalizeError } from "@utils/errors";
+import { normalizeError } from "@toolbox/common/errors";
 import { EMAIL_REGEX } from "@utils/regex";
 import { User } from "@prisma/client";
 import parsePhoneNumber from "libphonenumber-js";

@@ -1,4 +1,4 @@
-import { StandardErrorType } from "@common/response/types/types";
+import { StandardErrorType } from "@toolbox/response/types/types";
 import { Request } from "express";
 import { FieldValidationError, ValidationError, validationResult } from "express-validator";
 

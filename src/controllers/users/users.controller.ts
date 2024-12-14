@@ -1,8 +1,8 @@
-import { RequestWithParams } from "@common/request/types/types";
-import { GetUserByIdRequestType } from "@common/request/types/users";
-import { standardResponse } from "@common/response/responses";
-import { GetUserByIdResponseType } from "@common/response/types/users";
-import { normalizeError } from "@utils/errors";
+import { RequestWithParams } from "@toolbox/request/types/types";
+import { GetUserByIdRequestType } from "@toolbox/request/types/users";
+import { standardResponse } from "@utils/responses";
+import { GetUserByIdResponseType } from "@toolbox/response/types/users";
+import { normalizeError } from "@toolbox/common/errors";
 import log from "@utils/logger";
 import prisma from "@utils/prisma";
 import { Response } from "express";

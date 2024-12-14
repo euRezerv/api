@@ -1,4 +1,4 @@
-import { standardResponse } from "@common/response/responses";
+import { standardResponse } from "@utils/responses";
 import { Request, Response, NextFunction } from "express";
 
 export const isAuthenticated = {

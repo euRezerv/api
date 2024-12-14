@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import { User } from "@prisma/client";
-import { LoginResponseType, RegisterResponseType } from "@common/response/types/userAuth";
-import { LoginRequestType, RegisterRequestType } from "@common/request/types/userAuth";
-import { RequestWithBody } from "@common/request/types/types";
+import { LoginResponseType, RegisterResponseType } from "@toolbox/response/types/userAuth";
+import { LoginRequestType, RegisterRequestType } from "@toolbox/request/types/userAuth";
+import { RequestWithBody } from "@toolbox/request/types/types";
 import passport from "passport";
-import { standardResponse } from "@common/response/responses";
+import { standardResponse } from "@utils/responses";
 import log from "@utils/logger";
-import { normalizeError } from "@utils/errors";
+import { normalizeError } from "@toolbox/common/errors";
 import prisma from "@utils/prisma";
 import { isSupportedCountry, parsePhoneNumberWithError } from "libphonenumber-js";
 import argon2 from "argon2";

@@ -1,8 +1,8 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import { check, param, query } from "express-validator";
 import validationResultFormatter from "./validationResultFormatter";
-import { isObjectEmpty } from "@utils/objects";
-import { standardResponse } from "@common/response/responses";
+import { isObjectEmpty } from "@toolbox/common/objects";
+import { standardResponse } from "@utils/responses";
 import { CompanyEmployeeRole } from "@prisma/client";
 
 export const validateGetCompanyById: RequestHandler[] = [

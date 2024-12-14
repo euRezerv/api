@@ -1,7 +1,7 @@
 import { param } from "express-validator";
 import validationResultFormatter from "./validationResultFormatter";
-import { standardResponse } from "@common/response/responses";
-import { isObjectEmpty } from "@utils/objects";
+import { standardResponse } from "@utils/responses";
+import { isObjectEmpty } from "@toolbox/common/objects";
 import { NextFunction, Request, RequestHandler, Response } from "express";
 
 export const validateGetUserById: RequestHandler[] = [
