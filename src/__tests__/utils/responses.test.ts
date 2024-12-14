@@ -27,16 +27,18 @@ describe("standardResponse", () => {
     });
   });
 
-  it("should return the correct default status code if no response is provided", () => {
+  it("should default to 200 or 400 if res is provided without a statusCode", () => {
+    const mockResponse = {} as Response;
+
     const successResult = standardResponse({
       isSuccess: true,
-      res: {} as Response,
+      res: mockResponse,
     });
     expect(successResult.statusCode).toBe(200);
 
     const failureResult = standardResponse({
       isSuccess: false,
-      res: {} as Response,
+      res: mockResponse,
     });
     expect(failureResult.statusCode).toBe(400);
   });
