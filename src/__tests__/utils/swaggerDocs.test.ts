@@ -1,4 +1,4 @@
-import { HTTP_RESPONSES, jsonRequestBody, SwaggerDocsManager } from "../../utils/swaggerDocs";
+import { HTTP_RESPONSES, jsonRequestBody, SwaggerDocsManager } from "@utils/swaggerDocs";
 import { OpenAPIV3 } from "openapi-types";
 
 describe("SwaggerDocsManager", () => {

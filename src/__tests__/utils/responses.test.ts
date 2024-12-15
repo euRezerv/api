@@ -1,5 +1,5 @@
 import { StandardErrorType, StandardResponseType } from "@toolbox/response/types/types";
-import { getPaginationResponse, standardResponse } from "../../utils/responses";
+import { getPaginationResponse, standardResponse } from "@utils/responses";
 import { Response } from "express";
 
 describe("standardResponse", () => {

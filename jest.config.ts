@@ -13,6 +13,11 @@ const config: Config = {
   ],
   coverageDirectory: "<rootDir>/src/__tests__/coverage/",
   resetMocks: true,
+  moduleNameMapper: {
+    "^@utils/(.*)$": "<rootDir>/src/utils/$1",
+    "^@toolbox/(.*)$": "<rootDir>/src/toolbox/src/$1",
+    "^src/(.*)$": "<rootDir>/src/$1",
+  },
 };
 
 export default config;

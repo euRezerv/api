@@ -1,4 +1,4 @@
-import { isEmailFormat } from "../../utils/regex";
+import { isEmailFormat } from "@utils/regex";
 
 describe("isEmailFormat", () => {
   it("should return true for valid email addresses", () => {
