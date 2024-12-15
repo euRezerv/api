@@ -3,7 +3,7 @@ import { PassportStatic } from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import prisma from "@utils/prisma";
 import { normalizeError } from "@toolbox/common/errors";
-import { EMAIL_REGEX } from "@utils/regex";
+import { isEmailFormat } from "@utils/regex";
 import { User } from "@prisma/client";
 import parsePhoneNumber from "libphonenumber-js";
 
@@ -13,8 +13,7 @@ export const localStrategy = (passport: PassportStatic) => {
       try {
         let user: User | null = null;
 
-        const identifierIsEmail = new RegExp(EMAIL_REGEX).test(identifier);
-        if (identifierIsEmail) {
+        if (isEmailFormat(identifier)) {
           user = await prisma.user.findUnique({ where: { email: identifier } });
         } else {
           const parsedPhoneNumber = parsePhoneNumber(identifier);
