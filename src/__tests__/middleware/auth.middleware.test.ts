@@ -1,4 +1,4 @@
-import { isAuthenticated } from "../../services/auth.service";
+import { isAuthenticated } from "../../middleware/auth.middleware";
 import { Request, Response, NextFunction } from "express";
 import { standardResponse } from "@utils/responses";
 
@@ -21,10 +21,13 @@ describe("isAuthenticated.local", () => {
   });
 
   it("should call next if user is authenticated", () => {
+    // arrange
     (req.isAuthenticated as unknown as jest.Mock).mockReturnValue(true);
 
+    // act
     isAuthenticated.local(req as Request, res as Response, next);
 
+    // assert
     expect(req.isAuthenticated).toHaveBeenCalled();
     expect(next).toHaveBeenCalled();
     expect(res.status).not.toHaveBeenCalled();
@@ -32,10 +35,13 @@ describe("isAuthenticated.local", () => {
   });
 
   it("should return 401 if user is not authenticated", () => {
+    // arrange
     (req.isAuthenticated as unknown as jest.Mock).mockReturnValue(false);
 
+    // act
     isAuthenticated.local(req as Request, res as Response, next);
 
+    // assert
     expect(req.isAuthenticated).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith(

@@ -1,4 +1,4 @@
-import { isAuthenticated } from "../../../services/auth.service";
+import { isAuthenticated } from "../../../middleware/auth.middleware";
 import { Router } from "express";
 import { cookieSecurity, HTTP_RESPONSES, SwaggerDocsManager } from "@utils/swaggerDocs";
 import { validateGetUserById } from "src/validators/users.validator";

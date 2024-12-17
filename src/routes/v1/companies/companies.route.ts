@@ -1,5 +1,5 @@
-import { isAuthenticated } from "../../../services/auth.service";
-import { addPagination } from "../../../services/pagination.service";
+import { isAuthenticated } from "../../../middleware/auth.middleware";
+import { addPagination } from "../../../middleware/pagination.middleware";
 import { Router } from "express";
 import { createCompany, getCompanies, getCompanyById } from "src/controllers/companies.controller";
 import { validateCreateCompany, validateGetCompanies, validateGetCompanyById } from "src/validators/companies.validator";
