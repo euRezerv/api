@@ -55,6 +55,7 @@ model Company {
 enum CompanyEmployeeRole {
   REGULAR
   MANAGER
+  OWNER
 }
 
 model CompanyEmployee {
