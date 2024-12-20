@@ -21,6 +21,17 @@ describe("SwaggerDocsManager", () => {
       },
     };
 
+    // act
+    manager.add(doc1);
+
+    // assert
+    expect(manager.getDocs()).toEqual({
+      "/users": {
+        get: { summary: "Get all users", responses: { 200: { description: "Success" } } },
+      },
+    });
+
+    // arrange
     const doc2: Record<string, OpenAPIV3.PathItemObject> = {
       "/users": {
         post: { summary: "Create a user", responses: { 201: { description: "Created" } } },
@@ -31,16 +42,9 @@ describe("SwaggerDocsManager", () => {
     };
 
     // act
-    manager.add(doc1);
     manager.add(doc2);
 
     // assert
-    expect(manager.getDocs()).toEqual({
-      "/users": {
-        get: { summary: "Get all users", responses: { 200: { description: "Success" } } },
-      },
-    });
-
     expect(manager.getDocs()).toEqual({
       "/users": {
         get: { summary: "Get all users", responses: { 200: { description: "Success" } } },
