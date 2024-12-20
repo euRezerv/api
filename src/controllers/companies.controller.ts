@@ -13,8 +13,8 @@ import {
 import { CompanyEmployeeRole } from "@prisma/client";
 import { normalizeError } from "@toolbox/common/errors";
 import log from "@utils/logger";
-import prisma from "@utils/prisma";
 import { Response } from "express";
+import CompanyService from "src/services/company.service";
 
 export const getCompanies = async (
   req: RequestWithQuery<GetCompaniesRequestType>,
@@ -39,7 +39,7 @@ export const getCompanies = async (
 
     let companies = [];
     try {
-      companies = await prisma.company.findMany({ where: constraints, skip, take });
+      companies = await CompanyService.getAllCompanies({ filters: constraints, skip, take });
     } catch (error) {
       log.error(error);
       res
@@ -52,7 +52,7 @@ export const getCompanies = async (
 
     let totalCount;
     try {
-      totalCount = await prisma.company.count({ where: constraints });
+      totalCount = await CompanyService.getCompaniesCount({ filters: constraints });
     } catch (error) {
       log.error(error);
       res.status(500).json(
@@ -105,12 +105,7 @@ export const getCompanyById = async (
 
     let company;
     try {
-      company = await prisma.company.findUnique({
-        where: {
-          id: companyId,
-          deletedAt: null,
-        },
-      });
+      company = await CompanyService.getCompanyById(companyId);
     } catch (error) {
       log.error(error);
       res
@@ -169,7 +164,8 @@ export const createCompany = async (
 
     let company;
     try {
-      company = await prisma.company.create({
+      company = await CompanyService.createCompany({
+        createdById: req.user.id,
         data: {
           name,
           country,
@@ -179,7 +175,6 @@ export const createCompany = async (
           postalCode,
           latitude,
           longitude,
-          createdById: req.user.id,
         },
       });
     } catch (error) {
@@ -189,54 +184,6 @@ export const createCompany = async (
         .json(
           standardResponse({ isSuccess: false, res, message: "Failed to create company", errors: normalizeError(error) })
         );
-      return;
-    }
-
-    let companyManager;
-    try {
-      companyManager = await prisma.companyEmployee.create({
-        data: {
-          companyId: company.id,
-          employeeId: req.user.id,
-          role: CompanyEmployeeRole.MANAGER,
-        },
-      });
-    } catch (error) {
-      log.error(error);
-      res.status(500).json(
-        standardResponse({
-          isSuccess: false,
-          res,
-          message: "Failed to create company manager",
-          errors: normalizeError(error),
-        })
-      );
-      return;
-    }
-
-    try {
-      await prisma.company.update({
-        where: {
-          id: company.id,
-        },
-        data: {
-          employees: {
-            connect: {
-              id: companyManager.id,
-            },
-          },
-        },
-      });
-    } catch (error) {
-      log.error(error);
-      res.status(500).json(
-        standardResponse({
-          isSuccess: false,
-          res,
-          message: "Failed to connect company manager to company",
-          errors: normalizeError(error),
-        })
-      );
       return;
     }
 

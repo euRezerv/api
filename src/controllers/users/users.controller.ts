@@ -4,9 +4,9 @@ import { standardResponse } from "@utils/responses";
 import { GetUserByIdResponseType } from "@toolbox/response/types/users";
 import { normalizeError } from "@toolbox/common/errors";
 import log from "@utils/logger";
-import prisma from "@utils/prisma";
 import { Response } from "express";
 import parsePhoneNumber, { isSupportedCountry } from "libphonenumber-js";
+import UserService from "src/services/user.service";
 
 export const getUserById = async (
   req: RequestWithParams<GetUserByIdRequestType>,
@@ -17,12 +17,7 @@ export const getUserById = async (
 
     let user;
     try {
-      user = await prisma.user.findUnique({
-        where: {
-          id: userId,
-          deletedAt: null,
-        },
-      });
+      user = await UserService.getUserById(userId);
     } catch (error) {
       log.error(error);
       res
