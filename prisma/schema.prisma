@@ -26,8 +26,8 @@ model User {
   bookings                BookingCustomer[]
   createdCompanies        Company[]              @relation("CreatedCompanies")
   updatedCompaniesHistory CompanyUpdateHistory[]
-  updatedAt               DateTime               @updatedAt @db.Timestamptz(6)
   createdAt               DateTime               @default(now()) @db.Timestamptz(6)
+  updatedAt               DateTime               @updatedAt @db.Timestamptz(6)
   deletedAt               DateTime?              @db.Timestamptz(6)
 
   @@unique([phoneNumberCountryISO, phoneNumber])
