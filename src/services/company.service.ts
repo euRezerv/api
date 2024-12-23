@@ -65,7 +65,7 @@ export default class CompanyService {
 
   static async updateCompany({ companyId, data }: UpdateCompanyProps) {
     try {
-      const company = await prisma.company.update({ where: { id: companyId }, data });
+      const company = await prisma.company.update({ where: { id: companyId, deletedAt: null }, data });
 
       return company;
     } catch (error) {
@@ -84,12 +84,10 @@ export default class CompanyService {
         },
       });
 
-      await this.updateCompany({ companyId, data: { employees: { connect: { id: companyEmployee.id } } } });
-
       return companyEmployee;
     } catch (error) {
       log.error(error);
-      throw normalizeError;
+      throw normalizeError(error);
     }
   }
 }

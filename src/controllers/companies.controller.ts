@@ -34,7 +34,6 @@ export const getCompanies = async (
             },
           },
         }),
-      deletedAt: null,
     };
 
     let companies = [];
