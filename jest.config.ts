@@ -10,8 +10,15 @@ const config: Config = {
     "<rootDir>/logs/",
     "<rootDir>/node_modules/",
     "<rootDir>/prisma/",
+    "<rootDir>/src/__tests__/testUtils/",
   ],
   coverageDirectory: "<rootDir>/src/__tests__/coverage/",
+  coveragePathIgnorePatterns: [
+    "<rootDir>/src/__tests__/",
+    "<rootDir>/src/config/server.ts",
+    "<rootDir>/src/config/session.ts",
+    "<rootDir>/src/config/swagger.ts",
+  ],
   resetMocks: true,
   moduleNameMapper: {
     "^@utils/(.*)$": "<rootDir>/src/utils/$1",
