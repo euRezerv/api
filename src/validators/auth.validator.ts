@@ -8,7 +8,7 @@ import { isSupportedCountry, isValidPhoneNumber } from "libphonenumber-js";
 import { isUppercase } from "@toolbox/common/strings";
 
 export const validateLogin: RequestHandler[] = [
-  check("identifier").not().isEmpty({ ignore_whitespace: true }).withMessage("Identifier is required"),
+  check("identifier").not().isEmpty({ ignore_whitespace: true }).withMessage("Identifier is required").toLowerCase(),
   check("password").not().isEmpty({ ignore_whitespace: true }).withMessage("Password is required"),
   (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResultFormatter(req);
@@ -40,6 +40,7 @@ export const validateRegister: RequestHandler[] = [
     .not()
     .isEmpty({ ignore_whitespace: true })
     .withMessage("Email is required")
+    .toLowerCase()
     .matches(EMAIL_REGEX)
     .withMessage("Email is invalid"),
   check("phoneNumberCountryISO")
@@ -48,8 +49,7 @@ export const validateRegister: RequestHandler[] = [
     .withMessage("Phone number prefix is required")
     .isString()
     .withMessage("Phone number prefix must be a string")
-    .custom((prefixISO) => isUppercase(prefixISO))
-    .withMessage("Phone number prefix must be uppercase")
+    .toUpperCase()
     .custom((prefixISO) => isSupportedCountry(prefixISO))
     .withMessage("Phone number prefix is not supported"),
   check("phoneNumber")
