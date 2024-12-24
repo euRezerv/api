@@ -29,6 +29,7 @@ export default class UserService {
             phoneNumberCountryISO,
             phoneNumber,
           },
+          deletedAt: null,
         },
       });
     } catch (error) {
