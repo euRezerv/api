@@ -1,6 +1,6 @@
 import argon2 from "argon2";
 import { Prisma } from "@prisma/client";
-import { DIGITS, EN_ALPHABET, getRandomString } from "@toolbox/common/strings";
+import { DIGITS, EN_ALPHABET, EN_ALPHABET_LOWERCASE, getRandomString } from "@toolbox/common/strings";
 import prisma from "@utils/prisma";
 
 export const clearTestDb = async () => {
@@ -35,10 +35,10 @@ export const getTestUserData = async () => {
   return {
     firstName: "Test",
     lastName: "User",
-    email: `test-${getRandomString(10)}@test.com`,
+    email: `test-${getRandomString(10, `${EN_ALPHABET_LOWERCASE}${DIGITS}`)}@test.com`,
     isEmailVerified: false,
     phoneNumberCountryISO: "RO",
-    phoneNumber: Math.floor(Math.random() * 1000000000).toString(),
+    phoneNumber: "7" + Math.random().toString().slice(2, 10),
     isPhoneVerified: false,
     password: await argon2.hash(`A${getRandomString(10)}1!`),
     isSystemAdmin: false,
