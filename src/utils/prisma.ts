@@ -3,11 +3,11 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import log from "@utils/logger";
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.CONNECTION_STRING;
 
 if (!connectionString) {
-  log.error("DATABASE_URL is not defined in environment variables");
-  throw new Error("DATABASE_URL is not defined in environment variables");
+  log.error("CONNECTION_STRING is not defined in environment variables");
+  throw new Error("CONNECTION_STRING is not defined in environment variables");
 }
 
 export const pool = new Pool({ connectionString });

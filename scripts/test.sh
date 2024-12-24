@@ -5,7 +5,7 @@ echo "========== Starting Testing Environment =========="
 # Helper function to clean up Docker containers and volumes
 function cleanup() {
   echo "Cleaning up test database..."
-  docker compose -f src/__tests__/testUtils/docker-compose.test.yml down -v || {
+  docker compose -f src/__tests__/testUtils/docker-compose.test.yml --env-file .env.test down -v || {
     echo "Failed to clean up test database.";
     exit 1;
   }
@@ -13,7 +13,7 @@ function cleanup() {
 
 # Start the test database
 echo "Starting the test database..."
-docker compose -f src/__tests__/testUtils/docker-compose.test.yml up -d || {
+docker compose -f src/__tests__/testUtils/docker-compose.test.yml --env-file .env.test up -d || {
   echo "Failed to start the test database.";
   exit 1;
 }
@@ -21,7 +21,7 @@ docker compose -f src/__tests__/testUtils/docker-compose.test.yml up -d || {
 # Wait for the database to become ready
 echo "Waiting for the database to be ready..."
 RETRIES=10
-until docker exec postgres-test pg_isready -U postgres >/dev/null 2>&1 || [ $RETRIES -eq 0 ]; do
+until docker exec euRezerv_test pg_isready -U postgres >/dev/null 2>&1 || [ $RETRIES -eq 0 ]; do
   echo "Database is not ready. Retrying in 1 second... ($RETRIES retries left)"
   sleep 1
   RETRIES=$((RETRIES - 1))
