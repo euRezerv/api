@@ -1,12 +1,12 @@
 import argon2 from "argon2";
 import { PassportStatic } from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import prisma from "@utils/prisma";
 import { normalizeError } from "@toolbox/common/errors";
 import { isEmailFormat } from "@utils/regex";
 import { User } from "@prisma/client";
 import parsePhoneNumber from "libphonenumber-js";
 import log from "@utils/logger";
+import UserService from "src/services/user.service";
 
 export const localStrategy = (passport: PassportStatic) => {
   passport.use(
@@ -15,34 +15,23 @@ export const localStrategy = (passport: PassportStatic) => {
         let user: User | null = null;
 
         if (isEmailFormat(identifier)) {
-          user = await prisma.user.findUnique({ where: { email: identifier } });
+          user = await UserService.getUserByEmail(identifier);
         } else {
           const parsedPhoneNumber = parsePhoneNumber(identifier);
           if (parsedPhoneNumber) {
             // For when the phone number is in international format
             if (parsedPhoneNumber.country) {
-              user = await prisma.user.findUnique({
-                where: {
-                  phoneNumberCountryISO_phoneNumber: {
-                    phoneNumberCountryISO: parsedPhoneNumber.country,
-                    phoneNumber: parsedPhoneNumber.nationalNumber,
-                  },
-                },
-              });
+              user = await UserService.getUserByPhoneNumber(parsedPhoneNumber.nationalNumber, parsedPhoneNumber.country);
             }
           } else {
             // For when the phone number is in national format
             // ToDo: Add support for other countries
             const parsedRoPhoneNumber = parsePhoneNumber(identifier, "RO");
             if (parsedRoPhoneNumber) {
-              user = await prisma.user.findUnique({
-                where: {
-                  phoneNumberCountryISO_phoneNumber: {
-                    phoneNumberCountryISO: parsedRoPhoneNumber.country || "RO",
-                    phoneNumber: parsedRoPhoneNumber.nationalNumber,
-                  },
-                },
-              });
+              user = await UserService.getUserByPhoneNumber(
+                parsedRoPhoneNumber.nationalNumber,
+                parsedRoPhoneNumber.country || "RO"
+              );
             }
           }
         }
