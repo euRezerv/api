@@ -2,16 +2,21 @@
 
 echo "========== Starting Development Environment =========="
 
+dockerComposeFile="docker/docker-compose.yml"
+projectName="eu_rezerv"
+containerName="euRezerv"
+envFile=".env"
+
 # Start the database container
 echo "Starting the database container..."
-docker compose -f docker-compose.yml up -d
+docker compose -f $dockerComposeFile -p $projectName --env-file $envFile up -d
 
 # Trap SIGINT (Ctrl+C) to stop the database and clean up
 trap cleanup SIGINT
 
 cleanup() {
   echo "Stopping the database container..."
-  docker compose -f docker-compose.yml stop
+  docker compose -f $dockerComposeFile -p $projectName --env-file $envFile stop
   exit
 }
 
