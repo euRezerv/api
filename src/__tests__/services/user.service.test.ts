@@ -2,7 +2,9 @@ import UserService from "src/services/user.service";
 import { clearTestDb, createTestUser } from "../testUtils/db";
 
 describe("UserService", () => {
-  beforeEach(clearTestDb);
+  beforeEach(async () => {
+    await clearTestDb();
+  });
 
   describe("getUserById", () => {
     it("should return the user with the given id", async () => {

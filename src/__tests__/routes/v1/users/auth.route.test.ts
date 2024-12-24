@@ -6,17 +6,18 @@ import supertest from "supertest";
 describe("loginUser", () => {
   const app = createServer();
 
-  beforeEach(() => {
-    clearTestDb();
+  beforeEach(async () => {
+    await clearTestDb();
   });
 
   it("should return a 200 if the login is successful", async () => {
     // arrange
     const email = "myemail@test.com";
     const password = "Password123!";
+    const hashedPassword = await argon2.hash(password);
 
     //  act
-    const user = await createTestUser({ email, password: await argon2.hash(password) });
+    const user = await createTestUser({ email, password: hashedPassword });
     const res = await supertest(app).post("/v1/users/auth/login").send({ identifier: email, password: password });
 
     // assert
@@ -125,9 +126,10 @@ describe("loginUser", () => {
     // arrange
     const email = "myemail@test.com";
     const password = "Password123!";
+    const hashedPassword = await argon2.hash(password);
 
     // act
-    await createTestUser({ email, password: await argon2.hash(password) });
+    await createTestUser({ email, password: hashedPassword });
     const res = await supertest(app).post("/v1/users/auth/login").send({ identifier: email, password: "wrong-password" });
 
     // assert
