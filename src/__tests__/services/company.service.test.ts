@@ -26,6 +26,14 @@ describe("CompanyService", () => {
       expect(result).toEqual(dbCompany);
     });
 
+    it("should return null if the company does not exist", async () => {
+      // act
+      const result = await CompanyService.getCompanyById("non-existing-id");
+
+      // assert
+      expect(result).toBeNull();
+    });
+
     it("should return null if the company was deleted", async () => {
       // arrange
       const dbCompany = await createTestCompany(owner.id, { deletedAt: new Date() });
