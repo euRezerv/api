@@ -6,6 +6,7 @@ import { normalizeError } from "@toolbox/common/errors";
 import { isEmailFormat } from "@utils/regex";
 import { User } from "@prisma/client";
 import parsePhoneNumber from "libphonenumber-js";
+import log from "@utils/logger";
 
 export const localStrategy = (passport: PassportStatic) => {
   passport.use(
@@ -45,18 +46,18 @@ export const localStrategy = (passport: PassportStatic) => {
             }
           }
         }
-
         if (!user) {
-          return done(null, false, { message: "User not found." });
+          return done(null, false, { message: "Invalid credentials" });
         }
 
         const isValid = await argon2.verify(user.password, password);
         if (!isValid) {
-          return done(null, false, { message: "Invalid password." });
+          return done(null, false, { message: "Invalid credentials" });
         }
 
         return done(null, user);
       } catch (err) {
+        log.error(err);
         return done(normalizeError(err));
       }
     })

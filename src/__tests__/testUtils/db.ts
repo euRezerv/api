@@ -1,3 +1,4 @@
+import argon2 from "argon2";
 import { Prisma } from "@prisma/client";
 import { DIGITS, EN_ALPHABET, getRandomString } from "@toolbox/common/strings";
 import prisma from "@utils/prisma";
@@ -30,7 +31,7 @@ export const clearTestDb = async () => {
   `);
 };
 
-export const getTestUserData = () => {
+export const getTestUserData = async () => {
   return {
     firstName: "Test",
     lastName: "User",
@@ -39,7 +40,7 @@ export const getTestUserData = () => {
     phoneNumberCountryISO: "RO",
     phoneNumber: Math.floor(Math.random() * 1000000000).toString(),
     isPhoneVerified: false,
-    password: `A${getRandomString(10)}1!`,
+    password: await argon2.hash(`A${getRandomString(10)}1!`),
     isSystemAdmin: false,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -50,7 +51,7 @@ export const getTestUserData = () => {
 export const createTestUser = async (data: Partial<Prisma.UserCreateInput> = {}) => {
   return await prisma.user.create({
     data: {
-      ...getTestUserData(),
+      ...(await getTestUserData()),
       ...data,
     },
   });
