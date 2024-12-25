@@ -16,8 +16,9 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          token: token
+          token: ${{ secrets.GITHUB_PAT }}
           submodules: recursive
+          ref: main
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
