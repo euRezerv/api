@@ -5,7 +5,7 @@ import createServer from "src/config/server";
 import supertest from "supertest";
 import TestAgent from "supertest/lib/agent";
 
-describe("/v1/users/auth/", () => {
+describe("/v1/users/auth", () => {
   let agent: InstanceType<typeof TestAgent>;
 
   beforeEach(async () => {
@@ -13,7 +13,7 @@ describe("/v1/users/auth/", () => {
     await clearTestDb();
   });
 
-  describe("loginUser", () => {
+  describe("POST /login", () => {
     it("should return a 200 if the login is successful", async () => {
       // arrange
       const email = "myemail@test.com";
@@ -120,7 +120,7 @@ describe("/v1/users/auth/", () => {
     });
   });
 
-  describe("logoutUser", () => {
+  describe("POST /logout", () => {
     it("should return a 200 if the logout is successful", async () => {
       // arrange
       const email = "myemail@test.com";
@@ -153,7 +153,7 @@ describe("/v1/users/auth/", () => {
     });
   });
 
-  describe("registerUser", () => {
+  describe("POST /register", () => {
     const getRegisterPayload = async () => {
       const userData = await getTestUserData();
 
