@@ -1,13 +1,34 @@
+name: Run Tests
+
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    container:
-      image: node:22
+
     steps:
-      - run: npm install
-      - run: npm test
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Copy .env.test
+        run: echo "$ENV_TEST_CONTENT" > .env.test
+        env:
+          ENV_TEST_CONTENT: ${{ secrets.ENV_TEST }}
+
+      - name: Run Tests
+        run: npm test
