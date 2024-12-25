@@ -2,6 +2,7 @@ import argon2 from "argon2";
 import { Prisma } from "@prisma/client";
 import { DIGITS, EN_ALPHABET, EN_ALPHABET_LOWERCASE, getRandomString } from "@toolbox/common/strings";
 import prisma from "@utils/prisma";
+import TestAgent from "supertest/lib/agent";
 
 export const clearTestDb = async () => {
   if (process.env.NODE_ENV !== "test") {
@@ -31,27 +32,38 @@ export const clearTestDb = async () => {
   `);
 };
 
-export const getTestUserData = async () => {
+export const authTestUser = async (identifier: string, plainPassword: string, agent: InstanceType<typeof TestAgent>) => {
+  await agent.post("/v1/users/auth/login").send({ identifier, password: plainPassword });
+};
+
+export const getTestUser = async () => {
+  const plainPassword = `A${getRandomString(10)}1!`;
+  const hashedPassword = await argon2.hash(plainPassword);
+
   return {
-    firstName: "Test",
-    lastName: "User",
-    email: `test-${getRandomString(10, `${EN_ALPHABET_LOWERCASE}${DIGITS}`)}@test.com`,
-    isEmailVerified: false,
-    phoneNumberCountryISO: "RO",
-    phoneNumber: "7" + Math.random().toString().slice(2, 10),
-    isPhoneVerified: false,
-    password: await argon2.hash(`A${getRandomString(10)}1!`),
-    isSystemAdmin: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null,
+    data: {
+      firstName: "Test",
+      lastName: "User",
+      email: `test-${getRandomString(10, `${EN_ALPHABET_LOWERCASE}${DIGITS}`)}@test.com`,
+      isEmailVerified: false,
+      phoneNumberCountryISO: "RO",
+      phoneNumber: "7" + Math.random().toString().slice(2, 10),
+      isPhoneVerified: false,
+      password: hashedPassword,
+      isSystemAdmin: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    },
+    plainPassword,
+    hashedPassword,
   };
 };
 
 export const createTestUser = async (data: Partial<Prisma.UserCreateInput> = {}) => {
   return await prisma.user.create({
     data: {
-      ...(await getTestUserData()),
+      ...(await getTestUser()).data,
       ...data,
     },
   });
