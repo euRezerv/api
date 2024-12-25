@@ -14,7 +14,7 @@ describe("/v1/users/auth", () => {
   });
 
   describe("POST /login", () => {
-    it.failing("should return a 200 if the login is successful", async () => {
+    it("should return a 200 if the login is successful", async () => {
       // arrange
       const email = "myemail@test.com";
       const password = "Password123!";
