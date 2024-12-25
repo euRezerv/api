@@ -57,3 +57,4 @@ dotenv -e $envFile -- jest --coverage --detectOpenHandles || {
 # Clean up Docker containers and volumes after tests
 echo "Cleaning up..."
 cleanup
+exit 0
