@@ -1,6 +1,6 @@
 import log from "@utils/logger";
 import argon2 from "argon2";
-import { clearTestDb, createTestUser, getTestUserData } from "src/__tests__/testUtils/db";
+import { clearTestDb, createTestUser, getTestUser } from "src/__tests__/testUtils/db";
 import createServer from "src/config/server";
 import supertest from "supertest";
 import TestAgent from "supertest/lib/agent";
@@ -155,7 +155,7 @@ describe("/v1/users/auth", () => {
 
   describe("POST /register", () => {
     const getRegisterPayload = async () => {
-      const userData = await getTestUserData();
+      const userData = (await getTestUser()).data;
 
       return {
         firstName: userData.firstName,
