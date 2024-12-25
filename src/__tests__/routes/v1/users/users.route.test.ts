@@ -16,7 +16,7 @@ describe("/v1/users", () => {
       // arrange
       const loggedUserInfo = await getTestUser();
       const loggedUser = await createTestUser(loggedUserInfo.data);
-      await authTestUser(loggedUser.email, loggedUserInfo.plainPassword, agent);
+      await authTestUser(loggedUserInfo.data.email, loggedUserInfo.plainPassword, agent);
       const user = await createTestUser();
 
       // act
@@ -68,7 +68,7 @@ describe("/v1/users", () => {
       // arrange
       const loggedUserInfo = await getTestUser();
       const loggedUser = await createTestUser(loggedUserInfo.data);
-      await authTestUser(loggedUser.email, loggedUserInfo.plainPassword, agent);
+      await authTestUser(loggedUserInfo.data.email, loggedUserInfo.plainPassword, agent);
 
       // act
       const response = await agent.get(`/v1/users/nonexistent-id`);
