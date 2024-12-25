@@ -40,7 +40,7 @@ fi
 
 # Run database migrations
 echo "Running database migrations..."
-dotenv -e $envFile -- prisma migrate deploy || {
+dotenv -e $envFile -- npx prisma migrate deploy || {
   echo "Failed to run migrations.";
   cleanup
   exit 1;
@@ -49,7 +49,7 @@ dotenv -e $envFile -- prisma migrate deploy || {
 # Run Jest tests with coverage
 echo "Running Jest tests..."
 # Allow jest params to be passed to the script
-dotenv -e $envFile -- jest $@ || {
+dotenv -e $envFile -- npx jest $@ || {
   echo "Tests failed.";
   cleanup
   exit 1;
