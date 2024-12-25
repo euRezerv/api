@@ -15,17 +15,15 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        # with:
+        #   submodules: recursive
+        #   token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 22
           cache: npm
-
-      - name: Initialize Git Submodules
-        run: |
-          git submodule init
-          git submodule update
 
       - name: Install dotenv-cli
         run: npm install -g dotenv-cli
