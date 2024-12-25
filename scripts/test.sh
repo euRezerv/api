@@ -48,7 +48,8 @@ dotenv -e $envFile -- prisma migrate deploy || {
 
 # Run Jest tests with coverage
 echo "Running Jest tests..."
-dotenv -e $envFile -- jest --coverage --detectOpenHandles || {
+# Allow jest params to be passed to the script
+dotenv -e $envFile -- jest $@ || {
   echo "Tests failed.";
   cleanup
   exit 1;

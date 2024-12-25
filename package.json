@@ -9,7 +9,7 @@
     "\n========== Develop ==========": "",
     "dev": "bash scripts/dev.sh",
     "\n========== Testing ==========": "",
-    "test": "bash scripts/test.sh"
+    "test": "bash scripts/test.sh --coverage --watchAll --detectOpenHandles"
   },
   "keywords": [],
   "author": "",
