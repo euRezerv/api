@@ -16,9 +16,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          # token: ${{ secrets.GITHUB_PAT }}
-          submodules: true
-          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+          submodules: "recursive"
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
