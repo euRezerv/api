@@ -11,6 +11,8 @@ const config: Config = {
     "<rootDir>/node_modules/",
     "<rootDir>/prisma/",
     "<rootDir>/src/__tests__/testUtils/",
+    // Remove
+    "<rootDir>/src/toolbox/",
   ],
   coverageDirectory: "<rootDir>/src/__tests__/coverage/",
   coveragePathIgnorePatterns: [
