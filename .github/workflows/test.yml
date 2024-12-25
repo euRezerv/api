@@ -37,4 +37,4 @@ jobs:
           ENV_TEST_CONTENT: ${{ secrets.ENV_TEST }}
 
       - name: Run Tests
-        run: npm test
+        run: bash scripts/test.sh --detectOpenHandles
