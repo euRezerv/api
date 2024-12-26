@@ -54,7 +54,7 @@ export default class CompanyService {
     try {
       const company = await prisma.company.create({ data: { ...data, createdBy: { connect: { id: createdById } } } });
 
-      this.addEmployeeToCompany({ companyId: company.id, employeeId: createdById, role: CompanyEmployeeRole.OWNER });
+      await this.addEmployeeToCompany({ companyId: company.id, employeeId: createdById, role: CompanyEmployeeRole.OWNER });
 
       return company;
     } catch (error) {
