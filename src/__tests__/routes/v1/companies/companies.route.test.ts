@@ -1,3 +1,4 @@
+import { omitKeys } from "@toolbox/common/objects";
 import { Company, CompanyEmployeeRole } from "@prisma/client";
 import {
   addTestUserToCompany,
@@ -5,10 +6,14 @@ import {
   createAndAuthTestUser,
   createTestCompany,
   createTestUser,
+  getTestCompanyData,
 } from "src/__tests__/testUtils/db";
 import createServer from "src/config/server";
 import supertest from "supertest";
 import TestAgent from "supertest/lib/agent";
+import prisma from "@utils/prisma";
+
+const baseUrl = "/v1/companies";
 
 describe("/v1/companies", () => {
   let agent: InstanceType<typeof TestAgent>;
@@ -40,7 +45,7 @@ describe("/v1/companies", () => {
       const pageSize = 10;
 
       // act
-      const res = await agent.get("/v1/companies").query({ pageSize });
+      const res = await agent.get(baseUrl).query({ pageSize });
 
       // assert
       expect(res.status).toBe(200);
@@ -62,7 +67,7 @@ describe("/v1/companies", () => {
       const pageSize = 10;
 
       // act
-      const res = await agent.get("/v1/companies").query({ pageSize });
+      const res = await agent.get(baseUrl).query({ pageSize });
 
       // assert
       expect(res.status).toBe(200);
@@ -86,7 +91,7 @@ describe("/v1/companies", () => {
       const pageSize = 2;
 
       // act
-      const res = await agent.get("/v1/companies").query({ pageSize });
+      const res = await agent.get(baseUrl).query({ pageSize });
 
       // assert
       expect(res.status).toBe(200);
@@ -111,7 +116,7 @@ describe("/v1/companies", () => {
       const page = 2;
 
       // act
-      const res = await agent.get("/v1/companies").query({ pageSize, page });
+      const res = await agent.get(baseUrl).query({ pageSize, page });
 
       // assert
       expect(res.status).toBe(200);
@@ -129,7 +134,7 @@ describe("/v1/companies", () => {
       const pageSize = 10;
 
       // act
-      const res = await agent.get("/v1/companies").query({ pageSize });
+      const res = await agent.get(baseUrl).query({ pageSize });
 
       // assert
       expect(res.status).toBe(200);
@@ -146,7 +151,7 @@ describe("/v1/companies", () => {
       const pageSize = 10;
 
       // act
-      const res = await agent.get("/v1/companies").query({ pageSize });
+      const res = await agent.get(baseUrl).query({ pageSize });
 
       // assert
       expect(res.status).toBe(200);
@@ -164,7 +169,7 @@ describe("/v1/companies", () => {
       const page = 2;
 
       // act
-      const res = await agent.get("/v1/companies").query({ pageSize, page });
+      const res = await agent.get(baseUrl).query({ pageSize, page });
 
       // assert
       expect(res.status).toBe(200);
@@ -184,8 +189,8 @@ describe("/v1/companies", () => {
       const pageSize = 10;
 
       // act
-      const res1 = await agent.get("/v1/companies").query({ pageSize, employeeId: user1.id });
-      const res2 = await agent.get("/v1/companies").query({ pageSize, employeeId: user2.id });
+      const res1 = await agent.get(baseUrl).query({ pageSize, employeeId: user1.id });
+      const res2 = await agent.get(baseUrl).query({ pageSize, employeeId: user2.id });
 
       // assert
       expect(res1.status).toBe(200);
@@ -215,16 +220,16 @@ describe("/v1/companies", () => {
 
       // act
       const res1 = await agent
-        .get("/v1/companies")
+        .get(baseUrl)
         .query({ pageSize, employeeId: user1.id, employeeRole: CompanyEmployeeRole.OWNER });
       const res2 = await agent
-        .get("/v1/companies")
+        .get(baseUrl)
         .query({ pageSize, employeeId: user1.id, employeeRole: CompanyEmployeeRole.MANAGER });
       const res3 = await agent
-        .get("/v1/companies")
+        .get(baseUrl)
         .query({ pageSize, employeeId: user1.id, employeeRole: CompanyEmployeeRole.REGULAR });
       const res4 = await agent
-        .get("/v1/companies")
+        .get(baseUrl)
         .query({ pageSize, employeeId: user2.id, employeeRole: CompanyEmployeeRole.OWNER });
 
       // assert
@@ -296,7 +301,7 @@ describe("/v1/companies", () => {
         await createAndAuthTestUser(agent);
 
         // act
-        const res = await agent.get("/v1/companies").query(query);
+        const res = await agent.get(baseUrl).query(query);
 
         // assert
         expect(res.status).toBe(400);
@@ -318,7 +323,187 @@ describe("/v1/companies", () => {
 
     it("should return a 401 if the user is not authenticated", async () => {
       // act
-      const res = await agent.get("/v1/companies");
+      const res = await agent.get(baseUrl);
+
+      // assert
+      expect(res.status).toBe(401);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("Unauthorized");
+    });
+  });
+
+  describe("GET /:id", () => {
+    it("should return a 200 and the company", async () => {
+      // arrange
+      const loggedUser = await createAndAuthTestUser(agent);
+      const company = await createTestCompany(loggedUser.id);
+
+      // act
+      const res = await agent.get(`${baseUrl}/${company.id}`);
+
+      // assert
+      expect(res.status).toBe(200);
+      expect(res.body.isSuccess).toBe(true);
+      expect(res.body.data.company).toMatchObject({
+        id: company.id,
+        name: company.name,
+        country: company.country,
+        county: company.county,
+        city: company.city,
+        street: company.street,
+        postalCode: company.postalCode,
+        latitude: company.latitude,
+        longitude: company.longitude,
+        createdById: company.createdById,
+        createdAt: company.createdAt.toISOString(),
+      });
+    });
+
+    it("should return a 404 if the company does not exist", async () => {
+      // arrange
+      await createAndAuthTestUser(agent);
+
+      // act
+      const res = await agent.get(`${baseUrl}/nonexistent-id`);
+
+      // assert
+      expect(res.status).toBe(404);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("Company not found");
+    });
+
+    it("should return a 401 if the user is not authenticated", async () => {
+      // arrange
+      const user = await createTestUser();
+      const company = await createTestCompany(user.id);
+
+      // act
+      const res = await agent.get(`${baseUrl}/${company.id}`);
+
+      // assert
+      expect(res.status).toBe(401);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("Unauthorized");
+    });
+  });
+
+  describe("POST /", () => {
+    const getPostCompanyData = () => {
+      return omitKeys(getTestCompanyData(), ["createdAt", "deletedAt"]);
+    };
+
+    it("should return a 201 and the created company, and add the owner as an employee", async () => {
+      // arrange
+      const loggedUser = await createAndAuthTestUser(agent);
+      const companyData = getPostCompanyData();
+
+      // act
+      const res = await agent.post(baseUrl).send(companyData);
+
+      // assert
+      expect(res.status).toBe(201);
+      expect(res.body.isSuccess).toBe(true);
+      expect(res.body.data.company).toMatchObject({
+        name: companyData.name,
+        country: companyData.country,
+        county: companyData.county,
+        city: companyData.city,
+        street: companyData.street,
+        postalCode: companyData.postalCode,
+        latitude: companyData.latitude,
+        longitude: companyData.longitude,
+        createdById: loggedUser.id,
+      });
+
+      const employees = await prisma.companyEmployee.findMany({ where: { companyId: res.body.data.company.id } });
+      expect(employees).toHaveLength(1);
+      expect(employees[0]).toMatchObject({
+        employeeId: loggedUser.id,
+        companyId: res.body.data.company.id,
+        role: CompanyEmployeeRole.OWNER,
+      });
+    });
+
+    const validationTestCases = [
+      {
+        name: "missing name, country, county, city, street, postalCode, latitude, longitude",
+        companyData: {},
+        expectedErrors: [
+          { message: "Name is required", field: "name" },
+          { message: "Country is required", field: "country" },
+          { message: "County is required", field: "county" },
+          { message: "City is required", field: "city" },
+          { message: "Street is required", field: "street" },
+          { message: "Postal code is required", field: "postalCode" },
+          { message: "Latitude is required", field: "latitude" },
+          { message: "Longitude is required", field: "longitude" },
+        ],
+      },
+      {
+        name: "name, country, county, city, street, postalCode, latitude, longitude contain only whitespaces",
+        companyData: {
+          name: " ",
+          country: " ",
+          county: " ",
+          city: " ",
+          street: " ",
+          postalCode: " ",
+          latitude: " ",
+          longitude: " ",
+        },
+        expectedErrors: [
+          { message: "Name is required", field: "name" },
+          { message: "Country is required", field: "country" },
+          { message: "County is required", field: "county" },
+          { message: "City is required", field: "city" },
+          { message: "Street is required", field: "street" },
+          { message: "Postal code is required", field: "postalCode" },
+          { message: "Latitude is required", field: "latitude" },
+          { message: "Longitude is required", field: "longitude" },
+        ],
+      },
+      {
+        name: "latitude and longitude are not numbers",
+        companyData: { ...getPostCompanyData(), latitude: "not-a-number", longitude: "not-a-number" },
+        expectedErrors: [
+          { message: "Latitude must be a number", field: "latitude" },
+          { message: "Longitude must be a number", field: "longitude" },
+        ],
+      },
+    ];
+
+    validationTestCases.forEach(({ name, companyData, expectedErrors }) => {
+      it(`should return a 400 if ${name}`, async () => {
+        // arrange
+        await createAndAuthTestUser(agent);
+
+        // act
+        const res = await agent.post(baseUrl).send(companyData);
+
+        // assert
+        expect(res.status).toBe(400);
+        expect(res.body.isSuccess).toBe(false);
+        expect(res.body.message).toBe("Validation error");
+        const mappedResBodyErrors = res.body.errors.map((error: any) => ({ message: error.message, field: error.field }));
+        expectedErrors.forEach((expectedError) => {
+          expect(mappedResBodyErrors).toEqual(
+            expect.arrayContaining([
+              {
+                message: expect.stringContaining(expectedError.message),
+                field: expectedError.field,
+              },
+            ])
+          );
+        });
+      });
+    });
+
+    it("should return a 401 if the user is not authenticated", async () => {
+      // arrange
+      const companyData = getPostCompanyData();
+
+      // act
+      const res = await agent.post(baseUrl).send(companyData);
 
       // assert
       expect(res.status).toBe(401);
