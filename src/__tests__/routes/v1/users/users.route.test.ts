@@ -1,4 +1,4 @@
-import { authTestUser, clearTestDb, createTestUser, getTestUser } from "src/__tests__/testUtils/db";
+import { clearTestDb, createAndAuthTestUser, createTestUser } from "src/__tests__/testUtils/db";
 import createServer from "src/config/server";
 import supertest from "supertest";
 import TestAgent from "supertest/lib/agent";
@@ -12,11 +12,9 @@ describe("/v1/users", () => {
   });
 
   describe("GET /:id", () => {
-    it("should return a 200 and the user", async () => {
+    it("should return a 200 and the user, regardless of the user's authentication status", async () => {
       // arrange
-      const loggedUserInfo = await getTestUser();
-      const loggedUser = await createTestUser(loggedUserInfo.data);
-      await authTestUser(loggedUserInfo.data.email, loggedUserInfo.plainPassword, agent);
+      const loggedUser = await createAndAuthTestUser(agent);
       const user = await createTestUser();
 
       // act
@@ -66,12 +64,10 @@ describe("/v1/users", () => {
 
     it("should return a 404 if the user does not exist", async () => {
       // arrange
-      const loggedUserInfo = await getTestUser();
-      const loggedUser = await createTestUser(loggedUserInfo.data);
-      await authTestUser(loggedUserInfo.data.email, loggedUserInfo.plainPassword, agent);
+      const loggedUser = await createAndAuthTestUser(agent);
 
       // act
-      const response = await agent.get(`/v1/users/nonexistent-id`);
+      const response = await agent.get(`/v1/users/${loggedUser.id + "nonexistent-id"}`);
 
       // assert
       expect(response.status).toBe(404);

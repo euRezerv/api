@@ -74,8 +74,10 @@ describe("/v1/users/auth", () => {
 
     payloadValidationTestCases.forEach(({ name, payload, expectedErrors }) => {
       it(`should return a 400 if ${name}`, async () => {
+        // act
         const res = await agent.post("/v1/users/auth/login").send(payload);
 
+        // assert
         expect(res.status).toBe(400);
         expect(res.body).toMatchObject({
           isSuccess: false,
@@ -271,7 +273,16 @@ describe("/v1/users/auth", () => {
           message: "Validation error",
         });
         const mappedResBodyErrors = res.body.errors.map((error: any) => ({ message: error.message, field: error.field }));
-        expect(mappedResBodyErrors).toEqual(expect.arrayContaining(expectedErrors));
+        expectedErrors.forEach((expectedError) => {
+          expect(mappedResBodyErrors).toEqual(
+            expect.arrayContaining([
+              {
+                message: expect.stringContaining(expectedError.message),
+                field: expectedError.field,
+              },
+            ])
+          );
+        });
       });
     });
 

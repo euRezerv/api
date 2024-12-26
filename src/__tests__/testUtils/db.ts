@@ -1,8 +1,9 @@
 import argon2 from "argon2";
-import { Prisma } from "@prisma/client";
+import { CompanyEmployeeRole, Prisma } from "@prisma/client";
 import { DIGITS, EN_ALPHABET, EN_ALPHABET_LOWERCASE, getRandomString } from "@toolbox/common/strings";
 import prisma from "@utils/prisma";
 import TestAgent from "supertest/lib/agent";
+import { omitKeys } from "@toolbox/common/objects";
 
 export const clearTestDb = async () => {
   if (process.env.NODE_ENV !== "test") {
@@ -69,6 +70,20 @@ export const createTestUser = async (data: Partial<Prisma.UserCreateInput> = {})
   });
 };
 
+export const createAndAuthTestUser = async (
+  agent: InstanceType<typeof TestAgent>,
+  data: Omit<Partial<Prisma.UserCreateInput>, "password"> & { plainPassword?: string } = {}
+) => {
+  const userInfo = await getTestUser();
+  const plainPassword = data.plainPassword || userInfo.plainPassword;
+  const hashedPassword = await argon2.hash(plainPassword);
+  const user = await createTestUser({ ...userInfo.data, ...omitKeys(data, ["plainPassword"]), password: hashedPassword });
+
+  await authTestUser(user.email, plainPassword, agent);
+
+  return user;
+};
+
 export const getTestCompanyData = () => {
   return {
     name: getRandomString([10, 15]),
@@ -90,6 +105,16 @@ export const createTestCompany = async (createdById: string, data: Partial<Prism
       createdBy: { connect: { id: createdById } },
       ...getTestCompanyData(),
       ...data,
+    },
+  });
+};
+
+export const addTestUserToCompany = async (companyId: string, employeeId: string, role: CompanyEmployeeRole) => {
+  return await prisma.companyEmployee.create({
+    data: {
+      company: { connect: { id: companyId } },
+      employee: { connect: { id: employeeId } },
+      role,
     },
   });
 };
