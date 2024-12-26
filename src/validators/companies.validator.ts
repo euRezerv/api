@@ -9,9 +9,9 @@ export const validateGetCompanyById: RequestHandler[] = [
   param("id")
     .not()
     .isEmpty({ ignore_whitespace: true })
-    .withMessage("Company ID is required.")
+    .withMessage("Company ID is required")
     .isString()
-    .withMessage("Company ID must be a string."),
+    .withMessage("Company ID must be a string"),
   (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResultFormatter(req);
     if (!isObjectEmpty(errors)) {
@@ -56,61 +56,61 @@ export const validateCreateCompany: RequestHandler[] = [
   check("name")
     .not()
     .isEmpty({ ignore_whitespace: true })
-    .withMessage("Name is required.")
+    .withMessage("Name is required")
     .isString()
-    .withMessage("Name must be a string."),
+    .withMessage("Name must be a string"),
   check("country")
     .not()
     .isEmpty({ ignore_whitespace: true })
-    .withMessage("Country is required.")
+    .withMessage("Country is required")
     .isString()
-    .withMessage("Country must be a string."),
+    .withMessage("Country must be a string"),
   check("county")
     .not()
     .isEmpty({ ignore_whitespace: true })
-    .withMessage("County is required.")
+    .withMessage("County is required")
     .isString()
-    .withMessage("County must be a string."),
+    .withMessage("County must be a string"),
   check("city")
     .not()
     .isEmpty({ ignore_whitespace: true })
-    .withMessage("City is required.")
+    .withMessage("City is required")
     .isString()
-    .withMessage("City must be a string."),
+    .withMessage("City must be a string"),
   check("street")
     .not()
     .isEmpty({ ignore_whitespace: true })
-    .withMessage("Street is required.")
+    .withMessage("Street is required")
     .isString()
-    .withMessage("Street must be a string."),
+    .withMessage("Street must be a string"),
   check("postalCode")
     .not()
     .isEmpty({ ignore_whitespace: true })
-    .withMessage("Postal code is required.")
+    .withMessage("Postal code is required")
     .isString()
-    .withMessage("Postal code must be a string."),
+    .withMessage("Postal code must be a string"),
   check("latitude")
     .not()
     .isEmpty({ ignore_whitespace: true })
-    .withMessage("Latitude is required.")
+    .withMessage("Latitude is required")
     .not()
     .isString()
-    .withMessage("Latitude must be a number.")
+    .withMessage("Latitude must be a number")
     .isFloat()
-    .withMessage("Latitude must be a number."),
+    .withMessage("Latitude must be a number"),
   check("longitude")
     .not()
     .isEmpty({ ignore_whitespace: true })
-    .withMessage("Longitude is required.")
+    .withMessage("Longitude is required")
     .not()
     .isString()
-    .withMessage("Longitude must be a number.")
+    .withMessage("Longitude must be a number")
     .isFloat()
-    .withMessage("Longitude must be a number."),
+    .withMessage("Longitude must be a number"),
   (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResultFormatter(req);
     if (!isObjectEmpty(errors)) {
-      res.status(400).json(standardResponse({ isSuccess: false, res, message: "Validation error.", errors }));
+      res.status(400).json(standardResponse({ isSuccess: false, res, message: "Validation error", errors }));
       return;
     }
 
