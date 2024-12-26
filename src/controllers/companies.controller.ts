@@ -10,7 +10,6 @@ import {
   GetCompaniesResponseType,
   GetCompanyByIdResponseType,
 } from "@toolbox/response/types/companies";
-import { CompanyEmployeeRole } from "@prisma/client";
 import { normalizeError } from "@toolbox/common/errors";
 import log from "@utils/logger";
 import { Response } from "express";
@@ -25,15 +24,14 @@ export const getCompanies = async (
     const { skip, take, page, pageSize } = req.pagination!;
 
     const constraints = {
-      ...(employeeId &&
-        employeeRole && {
-          employees: {
-            some: {
-              employeeId: employeeId,
-              role: employeeRole,
-            },
+      ...((employeeId || employeeRole) && {
+        employees: {
+          some: {
+            employeeId: employeeId,
+            role: employeeRole,
           },
-        }),
+        },
+      }),
     };
 
     let companies = [];
