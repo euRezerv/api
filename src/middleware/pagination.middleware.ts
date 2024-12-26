@@ -12,7 +12,7 @@ export const addPagination = (req: Request, res: Response, next: NextFunction) =
     .then(() => {
       const errors = validationResultFormatter(req);
       if (!isObjectEmpty(errors)) {
-        res.status(400).json(standardResponse({ isSuccess: false, res, message: "Validation error.", errors }));
+        res.status(400).json(standardResponse({ isSuccess: false, res, message: "Validation error", errors }));
         return;
       }
 
@@ -31,7 +31,7 @@ export const addPagination = (req: Request, res: Response, next: NextFunction) =
       res
         .status(500)
         .json(
-          standardResponse({ isSuccess: false, res, message: "Failed to fetch company.", errors: normalizeError(error) })
+          standardResponse({ isSuccess: false, res, message: "Failed to fetch company", errors: normalizeError(error) })
         );
       return;
     });

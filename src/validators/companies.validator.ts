@@ -24,14 +24,14 @@ export const validateGetCompanyById: RequestHandler[] = [
 ];
 
 export const validateGetCompanies: RequestHandler[] = [
-  query("employeeId").optional().isString().withMessage("Employee ID must be a string."),
+  query("employeeId").optional().isString().withMessage("Employee ID must be a string"),
   query("employeeRole")
     .optional()
     .isString()
-    .withMessage("Employee role must be a string.")
+    .withMessage("Employee role must be a string")
     .custom((value, { req }) => {
       if (value && !req.query?.employeeId) {
-        throw new Error("Employee role cannot be provided without employee ID.");
+        throw new Error("Employee role cannot be provided without employee ID");
       }
 
       if (!Object.values(CompanyEmployeeRole).includes(value.toUpperCase() as CompanyEmployeeRole)) {
@@ -44,7 +44,7 @@ export const validateGetCompanies: RequestHandler[] = [
   (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResultFormatter(req);
     if (!isObjectEmpty(errors)) {
-      res.status(400).json(standardResponse({ isSuccess: false, res, message: "Validation error.", errors }));
+      res.status(400).json(standardResponse({ isSuccess: false, res, message: "Validation error", errors }));
       return;
     }
 
