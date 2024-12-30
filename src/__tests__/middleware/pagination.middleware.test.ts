@@ -1,5 +1,5 @@
 import { addPagination } from "src/middleware/pagination.middleware";
-import { Request, Response, NextFunction, Express } from "express";
+import { Request, Response, Express } from "express";
 import TestAgent from "supertest/lib/agent";
 import createServer from "src/config/server";
 import supertest from "supertest";

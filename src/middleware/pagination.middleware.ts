@@ -31,7 +31,7 @@ export const addPagination = (req: Request, res: Response, next: NextFunction) =
       res
         .status(500)
         .json(
-          standardResponse({ isSuccess: false, res, message: "Failed to fetch company", errors: normalizeError(error) })
+          standardResponse({ isSuccess: false, res, message: "Failed to apply pagination", errors: normalizeError(error) })
         );
       return;
     });
