@@ -132,7 +132,7 @@ export const paginationQueryParams: OpenAPIV3.ParameterObject[] = [
   {
     in: "query",
     name: "pageSize",
-    required: true,
+    required: false,
     schema: { type: "integer" },
     description: "Page size",
   },

@@ -16,7 +16,7 @@ export const addPagination = (req: Request, res: Response, next: NextFunction) =
         return;
       }
 
-      const { page = 1, pageSize } = (req as unknown as RequestWithQuery<PaginationParamsType>).query;
+      const { page = 1, pageSize = 10 } = (req as unknown as RequestWithQuery<PaginationParamsType>).query;
       req.pagination = {
         skip: (page - 1) * pageSize,
         take: pageSize,
