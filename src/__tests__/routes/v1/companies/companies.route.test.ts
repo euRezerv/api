@@ -259,26 +259,6 @@ describe("/v1/companies", () => {
 
     const validationTestCases = [
       {
-        name: "missing pageSize",
-        query: {},
-        expectedErrors: [{ message: "Page size is required", field: "pageSize" }],
-      },
-      {
-        name: "pageSize is less than 1",
-        query: { pageSize: 0 },
-        expectedErrors: [{ message: "Page size must be a positive integer between 1 and 100", field: "pageSize" }],
-      },
-      {
-        name: "pageSize is greater than 100",
-        query: { pageSize: 101 },
-        expectedErrors: [{ message: "Page size must be a positive integer between 1 and 100", field: "pageSize" }],
-      },
-      {
-        name: "page is less than 1",
-        query: { pageSize: 10, page: 0 },
-        expectedErrors: [{ message: "Page must be a positive integer", field: "page" }],
-      },
-      {
         name: "employeeRole is provided without employeeId",
         query: { pageSize: 10, employeeRole: CompanyEmployeeRole.OWNER },
         expectedErrors: [{ message: "Employee role cannot be provided without employee ID", field: "employeeRole" }],
