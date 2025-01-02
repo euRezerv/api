@@ -6,10 +6,26 @@ import { normalizeError } from "@toolbox/common/errors";
 import log from "@utils/logger";
 import { Request, Response } from "express";
 import UserService from "src/services/user.service";
+import { CompleteUser } from "src/globalTypes";
 
 export const getAuthUser = async (req: Request, res: Response<GetAuthUserResponseType>) => {
   if (!req.user) {
     res.status(500).json(standardResponse({ isSuccess: false, res, message: "Failed to fetch user" }));
+    return;
+  }
+
+  let user: CompleteUser | null = null;
+  try {
+    user = await UserService.getUserById(req.user.id);
+  } catch (error) {
+    log.error(error);
+    res
+      .status(500)
+      .json(standardResponse({ isSuccess: false, res, message: "Failed to fetch user", errors: normalizeError(error) }));
+  }
+
+  if (!user) {
+    res.status(404).json(standardResponse({ isSuccess: false, res, message: "User not found" }));
     return;
   }
 
@@ -19,19 +35,19 @@ export const getAuthUser = async (req: Request, res: Response<GetAuthUserRespons
       res,
       data: {
         user: {
-          id: req.user.id,
-          isProfileComplete: !!req.user.localProfile,
-          ...(req.user.localProfile && {
-            givenName: req.user.localProfile.givenName,
-            familyName: req.user.localProfile.familyName,
-            email: req.user.localProfile.email,
-            isEmailVerified: req.user.localProfile.isEmailVerified,
-            phoneNumber: req.user.localProfile.phoneNumberFormatted,
-            isPhoneVerified: req.user.localProfile.isPhoneVerified,
-            isSystemAdmin: req.user.localProfile.isSystemAdmin,
+          id: user.id,
+          isProfileComplete: !!user.localProfile,
+          ...(user.localProfile && {
+            givenName: user.localProfile.givenName,
+            familyName: user.localProfile.familyName,
+            email: user.localProfile.email,
+            isEmailVerified: user.localProfile.isEmailVerified,
+            phoneNumber: user.localProfile.phoneNumberFormatted,
+            isPhoneVerified: user.localProfile.isPhoneVerified,
+            isSystemAdmin: user.localProfile.isSystemAdmin,
           }),
-          createdAt: req.user.createdAt.toISOString(),
-          updatedAt: req.user.updatedAt.toISOString(),
+          createdAt: user.createdAt.toISOString(),
+          updatedAt: user.updatedAt.toISOString(),
         },
       },
     })

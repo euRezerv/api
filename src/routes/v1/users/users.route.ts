@@ -17,6 +17,7 @@ UsersDocs.add({
       responses: {
         ...HTTP_RESPONSES.OK200(),
         ...HTTP_RESPONSES.UNAUTHORIZED401(),
+        ...HTTP_RESPONSES.NOT_FOUND404({ description: "User not found (should never happen)" }),
         ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500({ description: "Internal server error" }),
       },
     },
