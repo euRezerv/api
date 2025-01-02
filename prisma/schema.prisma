@@ -32,6 +32,7 @@ model LocalProfile {
   isEmailVerified       Boolean @default(false)
   phoneNumberCountryISO String
   phoneNumber           String
+  phoneNumberFormatted  String
   isPhoneVerified       Boolean @default(false)
   profileImageUrl       String?
   password              String? /// Not required if the user signed up with a 3rd party provider

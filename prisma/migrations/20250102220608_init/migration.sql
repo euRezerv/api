@@ -5,25 +5,50 @@ CREATE TYPE "CompanyEmployeeRole" AS ENUM ('REGULAR', 'MANAGER', 'OWNER');
 CREATE TYPE "ResourceCategory" AS ENUM ('SPORT_FIELD');
 
 -- CreateEnum
+CREATE TYPE "DayOfWeek" AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
+
+-- CreateEnum
 CREATE TYPE "BookingStatus" AS ENUM ('PENDING', 'APPROVED', 'CANCELLED', 'COMPLETED');
 
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
-    "firstName" TEXT NOT NULL,
-    "lastName" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "isEmailVerified" BOOLEAN NOT NULL DEFAULT false,
-    "phoneNumberCountryISO" TEXT NOT NULL,
-    "phoneNumber" TEXT NOT NULL,
-    "isPhoneVerified" BOOLEAN NOT NULL DEFAULT false,
-    "password" TEXT NOT NULL,
-    "isSystemAdmin" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(6) NOT NULL,
     "deletedAt" TIMESTAMPTZ(6),
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "LocalProfile" (
+    "id" TEXT NOT NULL,
+    "givenName" TEXT NOT NULL,
+    "familyName" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "isEmailVerified" BOOLEAN NOT NULL DEFAULT false,
+    "phoneNumberCountryISO" TEXT NOT NULL,
+    "phoneNumber" TEXT NOT NULL,
+    "phoneNumberFormatted" TEXT NOT NULL,
+    "isPhoneVerified" BOOLEAN NOT NULL DEFAULT false,
+    "profileImageUrl" TEXT,
+    "password" TEXT,
+    "isSystemAdmin" BOOLEAN NOT NULL DEFAULT false,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "LocalProfile_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "GoogleProfile" (
+    "id" TEXT NOT NULL,
+    "googleId" TEXT NOT NULL,
+    "accessToken" TEXT NOT NULL,
+    "refreshToken" TEXT,
+    "responseJson" JSONB NOT NULL,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "GoogleProfile_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -83,7 +108,7 @@ CREATE TABLE "Resource" (
 CREATE TABLE "ResourceAvailability" (
     "id" TEXT NOT NULL,
     "resourceId" TEXT NOT NULL,
-    "dayOfWeek" INTEGER NOT NULL,
+    "dayOfWeek" "DayOfWeek" NOT NULL,
     "startTime" TEXT NOT NULL,
     "endTime" TEXT NOT NULL,
 
@@ -138,10 +163,19 @@ CREATE TABLE "BookingCustomer" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX "LocalProfile_email_key" ON "LocalProfile"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_phoneNumberCountryISO_phoneNumber_key" ON "User"("phoneNumberCountryISO", "phoneNumber");
+CREATE UNIQUE INDEX "LocalProfile_userId_key" ON "LocalProfile"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "LocalProfile_phoneNumberCountryISO_phoneNumber_key" ON "LocalProfile"("phoneNumberCountryISO", "phoneNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "GoogleProfile_googleId_key" ON "GoogleProfile"("googleId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "GoogleProfile_userId_key" ON "GoogleProfile"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "CompanyEmployee_companyId_employeeId_key" ON "CompanyEmployee"("companyId", "employeeId");
@@ -151,6 +185,12 @@ CREATE UNIQUE INDEX "ResourceEmployee_resourceId_employeeId_key" ON "ResourceEmp
 
 -- CreateIndex
 CREATE UNIQUE INDEX "BookingCustomer_bookingId_customerId_key" ON "BookingCustomer"("bookingId", "customerId");
+
+-- AddForeignKey
+ALTER TABLE "LocalProfile" ADD CONSTRAINT "LocalProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "GoogleProfile" ADD CONSTRAINT "GoogleProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Company" ADD CONSTRAINT "Company_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
