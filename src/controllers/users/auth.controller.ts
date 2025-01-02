@@ -151,6 +151,6 @@ export const registerUser = async (req: RequestWithBody<RegisterRequestType>, re
 export const googleLoginUser = passport.authenticate("google", { scope: ["profile", "email"], session: true });
 
 export const googleLoginUserCallback = passport.authenticate("google", {
-  successRedirect: "http://localhost:5173/",
-  failureRedirect: "http://localhost:5173/",
+  successRedirect: `${process.env.WEB_URL}/`,
+  failureRedirect: `${process.env.WEB_URL}/`,
 });
