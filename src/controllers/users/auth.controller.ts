@@ -47,7 +47,7 @@ export const loginUser = (req: RequestWithBody<LoginRequestType>, res: Response<
                 isProfileComplete: !!user.localProfile,
                 ...(user.localProfile && {
                   email: user.localProfile.email,
-                  phoneNumber: user.localProfile.phoneNumber,
+                  phoneNumber: user.localProfile.phoneNumberFormatted,
                   givenName: user.localProfile.givenName,
                   familyName: user.localProfile.familyName,
                 }),
@@ -95,9 +95,9 @@ export const registerUser = async (req: RequestWithBody<RegisterRequestType>, re
       throw new Error("Phone number prefix is invalid");
     }
 
-    const parsedPhoneNumber = parsePhoneNumberWithError(phoneNumber, phoneNumberCountryISO);
+    const phoneNumberFormatted = parsePhoneNumberWithError(phoneNumber, phoneNumberCountryISO);
     const existingUserByPhoneNumber = await UserService.getUserByPhoneNumber(
-      parsedPhoneNumber.nationalNumber,
+      phoneNumberFormatted.nationalNumber,
       phoneNumberCountryISO,
       true
     );
@@ -115,7 +115,8 @@ export const registerUser = async (req: RequestWithBody<RegisterRequestType>, re
         familyName: familyName,
         email: email,
         phoneNumberCountryISO: phoneNumberCountryISO,
-        phoneNumber: parsedPhoneNumber.nationalNumber,
+        phoneNumber: phoneNumberFormatted.nationalNumber,
+        phoneNumberFormatted: phoneNumberFormatted.number,
         password: hashedPassword,
       },
     }).catch((error) => {
@@ -134,7 +135,7 @@ export const registerUser = async (req: RequestWithBody<RegisterRequestType>, re
             givenName: newUser.localProfile!.givenName,
             familyName: newUser.localProfile!.familyName,
             email: newUser.localProfile!.email,
-            phoneNumber: parsedPhoneNumber.number,
+            phoneNumber: phoneNumberFormatted.number,
             createdAt: newUser.createdAt.toISOString(),
           },
         },
