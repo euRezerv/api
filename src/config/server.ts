@@ -4,6 +4,8 @@ import setupSwagger from "src/config/swagger";
 import setupPassport from "src/config/passport";
 import routes from "../routes/v1/index.route";
 import log from "@utils/logger";
+import cors from "cors";
+import { addJsonErrorHandler } from "src/middleware/error.middleware";
 
 export const getServerPort = () => {
   if (process.env.PORT) {
@@ -24,7 +26,9 @@ const createServer = (port?: number) => {
     setupSwagger(app, port);
   }
 
+  app.use(cors({ origin: "*" }));
   app.use(express.json());
+  app.use(addJsonErrorHandler);
 
   app.use("/v1", routes);
 
