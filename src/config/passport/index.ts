@@ -1,7 +1,6 @@
 import passport from "passport";
 import { localStrategy } from "./local.strategy";
 import { googleStrategy } from "./google.strategy";
-import prisma from "@utils/prisma";
 import log from "@utils/logger";
 import UserService from "src/services/user.service";
 

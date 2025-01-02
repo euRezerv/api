@@ -7,7 +7,7 @@ export type CompleteUser = Prisma.User & {
 
 declare global {
   namespace Express {
-    interface User extends Prisma.User {}
+    interface User extends CompleteUser {} // Overwrite the Express.User interface
 
     interface Request {
       user?: CompleteUser; // Overwrite the existing req's object User interface

@@ -23,30 +23,26 @@ export const googleStrategy = (passport: PassportStatic) => {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          console.log({ accessToken, refreshToken, profile });
-          const { id: googleId, emails, name, photos } = profile;
-          const email = emails?.[0]?.value;
+          const { id: googleId } = profile;
 
-          let user = await UserService.getUserByGoogleId(googleId);
-          // ToDo: Add support for creating a new user if the user does not exist
-          // if (!user) {
-          //   user = await prisma.user.create({
-          //     data: {
-          //       givenName: name?.givenName || "",
-          //       familyName: name?.familyName || "",
-          //       email: email || "",
-          //       isEmailVerified: emails?.[0]?.verified,
-          //       googleProfile: {
-          //         create: {
-          //           googleId,
-          //           accessToken,
-          //           refreshToken,
-          //           profileImageUrl: photos?.[0]?.value,
-          //         },
-          //       },
-          //     },
-          //   });
-          // }
+          let user = await UserService.getUserByGoogleId(googleId, true);
+
+          if (!user) {
+            user = await UserService.createUser({
+              googleProfileData: {
+                googleId,
+                accessToken,
+                refreshToken,
+                responseJson: JSON.stringify(profile._json),
+              },
+            });
+          }
+
+          if (user?.deletedAt) {
+            return done(null, false, { message: "This account has been deleted" });
+          }
+
+          return done(null, user);
         } catch (error) {
           return done(error);
         }
