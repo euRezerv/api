@@ -13,15 +13,8 @@ datasource db {
 
 model User {
   id                      String                 @id @default(cuid())
-  firstName               String
-  lastName                String
-  email                   String                 @unique
-  isEmailVerified         Boolean                @default(false)
-  phoneNumberCountryISO   String
-  phoneNumber             String
-  isPhoneVerified         Boolean                @default(false)
-  password                String
-  isSystemAdmin           Boolean                @default(false)
+  localProfile            LocalProfile?          @relation
+  googleProfile           GoogleProfile?         @relation
   companies               CompanyEmployee[]
   bookings                BookingCustomer[]
   createdCompanies        Company[]              @relation("CreatedCompanies")
@@ -29,8 +22,34 @@ model User {
   createdAt               DateTime               @default(now()) @db.Timestamptz(6)
   updatedAt               DateTime               @updatedAt @db.Timestamptz(6)
   deletedAt               DateTime?              @db.Timestamptz(6)
+}
+
+model LocalProfile {
+  id                    String  @id @default(cuid())
+  givenName             String
+  familyName            String
+  email                 String  @unique
+  isEmailVerified       Boolean @default(false)
+  phoneNumberCountryISO String
+  phoneNumber           String
+  isPhoneVerified       Boolean @default(false)
+  profileImageUrl       String?
+  password              String? /// Not required if the user signed up with a 3rd party provider
+  isSystemAdmin         Boolean @default(false)
+  user                  User    @relation(fields: [userId], references: [id])
+  userId                String  @unique
 
   @@unique([phoneNumberCountryISO, phoneNumber])
+}
+
+model GoogleProfile {
+  id           String  @id @default(cuid())
+  googleId     String  @unique
+  accessToken  String
+  refreshToken String?
+  responseJson Json /// Google API response with email, name, etc.
+  user         User    @relation(fields: [userId], references: [id])
+  userId       String  @unique
 }
 
 model Company {
@@ -59,11 +78,11 @@ enum CompanyEmployeeRole {
 }
 
 model CompanyEmployee {
-  id                String             @id @default(cuid())
+  id                String              @id @default(cuid())
   companyId         String
-  company           Company            @relation(fields: [companyId], references: [id])
+  company           Company             @relation(fields: [companyId], references: [id])
   employeeId        String
-  employee          User               @relation(fields: [employeeId], references: [id])
+  employee          User                @relation(fields: [employeeId], references: [id])
   role              CompanyEmployeeRole
   assignedResources ResourceEmployee[]
 
@@ -100,11 +119,21 @@ model Resource {
   deletedAt               DateTime?              @db.Timestamptz(6)
 }
 
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
 model ResourceAvailability {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   resourceId String
-  resource   Resource @relation(fields: [resourceId], references: [id])
-  dayOfWeek  Int /// 0 = Monday, 1 = Tuesday, ...
+  resource   Resource  @relation(fields: [resourceId], references: [id])
+  dayOfWeek  DayOfWeek
   startTime  String /// "09:00"
   endTime    String /// "18:00"
 }
