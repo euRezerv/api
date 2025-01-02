@@ -1,5 +1,6 @@
 import UserService from "src/services/user.service";
 import { clearTestDb, createTestUser, getTestGoogleProfileData, getTestLocalProfile } from "../testUtils/db";
+import log from "@utils/logger";
 
 describe("UserService", () => {
   beforeEach(async () => {
@@ -323,6 +324,116 @@ describe("UserService", () => {
         googleProfile: googleProfileData,
         deletedAt: null,
       });
+    });
+
+    it("should create a new user with provided local and google profiles and user data", async () => {
+      // arrange
+      const localProfileData = (await getTestLocalProfile()).data;
+      const googleProfileData = getTestGoogleProfileData();
+      const userData = {
+        createdAt: new Date("2025-01-02"),
+        updatedAt: new Date("2025-01-03"),
+        deletedAt: new Date("2025-01-03"),
+      };
+
+      // act
+      const result = await UserService.createUser({ localProfileData, googleProfileData, userData });
+
+      // assert
+      expect(result).toMatchObject({
+        id: expect.any(String),
+        localProfile: localProfileData,
+        googleProfile: googleProfileData,
+        ...userData,
+      });
+    });
+
+    it("should throw an error if the email is duplicated", async () => {
+      const silenceLogs = jest.spyOn(log, "error").mockImplementation();
+
+      // arrange
+      const email = "taken@email.com";
+      await createTestUser({ localProfileData: { email } });
+      const duplicatedUserLocalProfileData = {
+        ...(await getTestLocalProfile()).data,
+        email: email,
+      };
+
+      // act
+      const promise = UserService.createUser({ localProfileData: duplicatedUserLocalProfileData });
+
+      // assert
+      await expect(promise).rejects.toThrow();
+
+      silenceLogs.mockRestore();
+    });
+
+    it("should not throw an error if the phone number is duplicated but the ISO differs", async () => {
+      // arrange
+      const phoneNumber = "123456789";
+      const phoneNumberCountryISO = "US";
+      await createTestUser({ localProfileData: { phoneNumber, phoneNumberCountryISO } });
+      const duplicatedUserLocalProfileData = {
+        ...(await getTestLocalProfile()).data,
+        phoneNumber,
+        phoneNumberCountryISO: "CA",
+      };
+
+      // act
+      const result = await UserService.createUser({ localProfileData: duplicatedUserLocalProfileData });
+
+      // assert
+      expect(result).toMatchObject({
+        id: expect.any(String),
+        localProfile: duplicatedUserLocalProfileData,
+        googleProfile: null,
+        deletedAt: null,
+      });
+    });
+
+    it("should not throw an error if the phone number ISO is duplicated but the phone number differs", async () => {
+      // arrange
+      const phoneNumber = "123456789";
+      const phoneNumberCountryISO = "US";
+      await createTestUser({ localProfileData: { phoneNumber, phoneNumberCountryISO } });
+      const duplicatedUserLocalProfileData = {
+        ...(await getTestLocalProfile()).data,
+        phoneNumber: "987654321",
+        phoneNumberCountryISO,
+      };
+
+      // act
+      const result = await UserService.createUser({ localProfileData: duplicatedUserLocalProfileData });
+
+      // assert
+      expect(result).toMatchObject({
+        id: expect.any(String),
+        localProfile: duplicatedUserLocalProfileData,
+        googleProfile: null,
+        deletedAt: null,
+      });
+    });
+
+    it("should throw an error if the phone number is duplicated", async () => {
+      const silenceLogs = jest.spyOn(log, "error").mockImplementation();
+
+      // arrange
+      const phoneNumber = "123456789";
+      const phoneNumberCountryISO = "US";
+      await createTestUser({ localProfileData: { phoneNumber, phoneNumberCountryISO } });
+      const duplicatedUserLocalProfileData = {
+        ...(await getTestLocalProfile()).data,
+        phoneNumber,
+        phoneNumberCountryISO,
+      };
+
+      // act
+      const promise = UserService.createUser({ localProfileData: duplicatedUserLocalProfileData });
+
+      // assert
+      await expect(promise).rejects.toThrow();
+
+      silenceLogs.mockRestore();
     });
   });
 });
