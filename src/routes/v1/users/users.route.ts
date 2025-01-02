@@ -2,10 +2,26 @@ import { isAuthenticated } from "../../../middleware/auth.middleware";
 import { Router } from "express";
 import { cookieSecurity, HTTP_RESPONSES, SwaggerDocsManager } from "@utils/swaggerDocs";
 import { validateGetUserById } from "src/validators/users.validator";
-import { getUserById } from "src/controllers/users/users.controller";
+import { getAuthUser, getUserById } from "src/controllers/users/users.controller";
 
 const router = Router();
 const UsersDocs = new SwaggerDocsManager();
+
+router.get("/auth-user", isAuthenticated.local, getAuthUser);
+UsersDocs.add({
+  "/v1/users/auth-user": {
+    get: {
+      summary: "Get authenticated user data",
+      tags: ["Users"],
+      ...cookieSecurity,
+      responses: {
+        ...HTTP_RESPONSES.OK200(),
+        ...HTTP_RESPONSES.UNAUTHORIZED401(),
+        ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500({ description: "Internal server error" }),
+      },
+    },
+  },
+});
 
 router.get("/:id", isAuthenticated.local, validateGetUserById, getUserById);
 UsersDocs.add({
