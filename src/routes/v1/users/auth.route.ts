@@ -1,7 +1,13 @@
 import { HTTP_RESPONSES, jsonRequestBody, SwaggerDocsManager } from "@utils/swaggerDocs";
 import { validateLogin, validateRegister } from "../../../validators/auth.validator";
 import { Router } from "express";
-import { loginUser, logoutUser, registerUser } from "src/controllers/users/auth.controller";
+import {
+  googleLoginUser,
+  googleLoginUserCallback,
+  loginUser,
+  logoutUser,
+  registerUser,
+} from "src/controllers/users/auth.controller";
 
 const router = Router();
 const AuthDocs = new SwaggerDocsManager();
@@ -48,8 +54,8 @@ AuthDocs.add({
       summary: "Register a new user",
       tags: ["Auth"],
       requestBody: jsonRequestBody({
-        firstName: { type: "string" },
-        lastName: { type: "string" },
+        givenName: { type: "string" },
+        familyName: { type: "string" },
         email: { type: "string" },
         phoneNumberCountryISO: { type: "string" },
         phoneNumber: { type: "string" },
@@ -59,6 +65,34 @@ AuthDocs.add({
         ...HTTP_RESPONSES.CREATED201({ description: "Registered successfully" }),
         ...HTTP_RESPONSES.BAD_REQUEST400({ description: "Validation error" }),
         ...HTTP_RESPONSES.CONFLICT409({ description: "User already exists" }),
+        ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500(),
+      },
+    },
+  },
+});
+
+router.get("/google", googleLoginUser);
+AuthDocs.add({
+  "/v1/users/auth/google": {
+    get: {
+      summary: "Login with Google",
+      tags: ["Auth"],
+      responses: {
+        ...HTTP_RESPONSES.OK200({ description: "Redirect to Google login" }),
+        ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500(),
+      },
+    },
+  },
+});
+
+router.get("/google/callback", googleLoginUserCallback);
+AuthDocs.add({
+  "/v1/users/auth/google/callback": {
+    get: {
+      summary: "Callback for Google login",
+      tags: ["Auth"],
+      responses: {
+        ...HTTP_RESPONSES.OK200({ description: "Redirect to the app" }),
         ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500(),
       },
     },

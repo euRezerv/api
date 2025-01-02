@@ -22,20 +22,20 @@ export const validateLogin: RequestHandler[] = [
 ];
 
 export const validateRegister: RequestHandler[] = [
-  check("firstName")
+  check("givenName")
     .not()
     .isEmpty({ ignore_whitespace: true })
-    .withMessage("First name is required")
+    .withMessage("Given name is required")
     .isString()
     .isLength({ min: 2 })
-    .withMessage("First name must be at least 2 characters long"),
-  check("lastName")
+    .withMessage("Given name must be at least 2 characters long"),
+  check("familyName")
     .not()
     .isEmpty({ ignore_whitespace: true })
-    .withMessage("Last name is required")
+    .withMessage("Family name is required")
     .isString()
     .isLength({ min: 2 })
-    .withMessage("Last name must be at least 2 characters long"),
+    .withMessage("Family name must be at least 2 characters long"),
   check("email")
     .not()
     .isEmpty({ ignore_whitespace: true })

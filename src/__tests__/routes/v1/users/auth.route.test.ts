@@ -1,6 +1,6 @@
 import log from "@utils/logger";
 import argon2 from "argon2";
-import { clearTestDb, createTestUser, getTestUser } from "src/__tests__/testUtils/db";
+import { clearTestDb, createTestUser, getTestLocalProfile } from "src/__tests__/testUtils/db";
 import createServer from "src/config/server";
 import supertest from "supertest";
 import TestAgent from "supertest/lib/agent";
@@ -21,7 +21,7 @@ describe("/v1/users/auth", () => {
       const hashedPassword = await argon2.hash(password);
 
       //  act
-      const user = await createTestUser({ email, password: hashedPassword });
+      const user = await createTestUser({ localProfileData: { email, password: hashedPassword } });
       const res = await agent.post("/v1/users/auth/login").send({ identifier: email, password: password });
 
       // assert
@@ -33,10 +33,10 @@ describe("/v1/users/auth", () => {
       expect(res.body.data).toMatchObject({
         user: {
           id: user.id,
-          email: user.email,
-          phoneNumber: user.phoneNumber,
-          firstName: user.firstName,
-          lastName: user.lastName,
+          email: user.localProfile!.email,
+          phoneNumber: user.localProfile!.phoneNumber,
+          givenName: user.localProfile!.givenName,
+          familyName: user.localProfile!.familyName,
         },
       });
     });
@@ -109,7 +109,7 @@ describe("/v1/users/auth", () => {
       const hashedPassword = await argon2.hash(password);
 
       // act
-      await createTestUser({ email, password: hashedPassword });
+      await createTestUser({ localProfileData: { email, password: hashedPassword } });
       const res = await agent.post("/v1/users/auth/login").send({ identifier: email, password: "wrong-password" });
 
       // assert
@@ -130,7 +130,7 @@ describe("/v1/users/auth", () => {
       const hashedPassword = await argon2.hash(password);
 
       // act
-      await createTestUser({ email, password: hashedPassword });
+      await createTestUser({ localProfileData: { email, password: hashedPassword } });
       await agent.post("/v1/users/auth/login").send({ identifier: email, password });
       const res = await agent.post("/v1/users/auth/logout");
 
@@ -157,15 +157,15 @@ describe("/v1/users/auth", () => {
 
   describe("POST /register", () => {
     const getRegisterPayload = async () => {
-      const userData = (await getTestUser()).data;
+      const localProfileData = (await getTestLocalProfile()).data;
 
       return {
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        email: userData.email,
-        phoneNumberCountryISO: userData.phoneNumberCountryISO,
-        phoneNumber: userData.phoneNumber,
-        password: userData.password,
+        givenName: localProfileData.givenName,
+        familyName: localProfileData.familyName,
+        email: localProfileData.email,
+        phoneNumberCountryISO: localProfileData.phoneNumberCountryISO,
+        phoneNumber: localProfileData.phoneNumber,
+        password: localProfileData.password,
       };
     };
 
@@ -186,11 +186,11 @@ describe("/v1/users/auth", () => {
 
     const payloadValidationTestCases = [
       {
-        name: "missing firstName, lastName, email, phoneNumberCountryISO, phoneNumber, password",
+        name: "missing givenName, familyName, email, phoneNumberCountryISO, phoneNumber, password",
         getPayload: async () => ({}),
         expectedErrors: [
-          { message: "First name is required", field: "firstName" },
-          { message: "Last name is required", field: "lastName" },
+          { message: "Given name is required", field: "givenName" },
+          { message: "Family name is required", field: "familyName" },
           { message: "Email is required", field: "email" },
           { message: "Phone number prefix is required", field: "phoneNumberCountryISO" },
           { message: "Phone number is required", field: "phoneNumber" },
@@ -198,18 +198,18 @@ describe("/v1/users/auth", () => {
         ],
       },
       {
-        name: "firstName, lastName, email, phoneNumberCountryISO, phoneNumber, password only contain whitespaces",
+        name: "givenName, familyName, email, phoneNumberCountryISO, phoneNumber, password only contain whitespaces",
         getPayload: async () => ({
-          firstName: "   ",
-          lastName: "   ",
+          givenName: "   ",
+          familyName: "   ",
           email: "   ",
           phoneNumberCountryISO: "   ",
           phoneNumber: "   ",
           password: "   ",
         }),
         expectedErrors: [
-          { message: "First name is required", field: "firstName" },
-          { message: "Last name is required", field: "lastName" },
+          { message: "Given name is required", field: "givenName" },
+          { message: "Family name is required", field: "familyName" },
           { message: "Email is required", field: "email" },
           { message: "Phone number prefix is required", field: "phoneNumberCountryISO" },
           { message: "Phone number is required", field: "phoneNumber" },
@@ -217,11 +217,11 @@ describe("/v1/users/auth", () => {
         ],
       },
       {
-        name: "firstName, lastName are less than 2 characters",
-        getPayload: async () => ({ ...(await getRegisterPayload()), firstName: "a", lastName: "b" }),
+        name: "givenName, familyName are less than 2 characters",
+        getPayload: async () => ({ ...(await getRegisterPayload()), givenName: "a", familyName: "b" }),
         expectedErrors: [
-          { message: "First name must be at least 2 characters long", field: "firstName" },
-          { message: "Last name must be at least 2 characters long", field: "lastName" },
+          { message: "Given name must be at least 2 characters long", field: "givenName" },
+          { message: "Family name must be at least 2 characters long", field: "familyName" },
         ],
       },
       {
@@ -289,7 +289,7 @@ describe("/v1/users/auth", () => {
     it("should return a 409 if the email already exists", async () => {
       // arrange
       const payload = await getRegisterPayload();
-      await createTestUser({ email: payload.email });
+      await createTestUser({ localProfileData: { email: payload.email } });
 
       // act
       const res = await agent.post("/v1/users/auth/register").send(payload);
@@ -305,7 +305,7 @@ describe("/v1/users/auth", () => {
     it("should return a 409 if the email already exists, but the user was soft deleted", async () => {
       // arrange
       const payload = await getRegisterPayload();
-      await createTestUser({ email: payload.email, deletedAt: new Date() });
+      await createTestUser({ localProfileData: { email: payload.email }, userData: { deletedAt: new Date() } });
 
       // act
       const res = await agent.post("/v1/users/auth/register").send(payload);
@@ -321,7 +321,7 @@ describe("/v1/users/auth", () => {
     it("should return a 409 if the phoneNumber already exists", async () => {
       // arrange
       const payload = await getRegisterPayload();
-      await createTestUser({ phoneNumber: payload.phoneNumber });
+      await createTestUser({ localProfileData: { phoneNumber: payload.phoneNumber } });
 
       // act
       const res = await agent.post("/v1/users/auth/register").send(payload);
@@ -337,7 +337,7 @@ describe("/v1/users/auth", () => {
     it("should return a 409 if the phoneNumber already exists, but the user was soft deleted", async () => {
       // arrange
       const payload = await getRegisterPayload();
-      await createTestUser({ phoneNumber: payload.phoneNumber, deletedAt: new Date() });
+      await createTestUser({ localProfileData: { phoneNumber: payload.phoneNumber }, userData: { deletedAt: new Date() } });
 
       // act
       const res = await agent.post("/v1/users/auth/register").send(payload);

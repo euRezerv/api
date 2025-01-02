@@ -30,8 +30,25 @@ export const getUserById = async (
       return;
     }
 
-    if (!isSupportedCountry(user.phoneNumberCountryISO)) {
-      log.error(`Phone number country is not supported: ${user.phoneNumberCountryISO}`);
+    if (!user.localProfile) {
+      res.status(200).json(
+        standardResponse({
+          isSuccess: true,
+          res,
+          data: {
+            user: {
+              id: user.id,
+              isProfileComplete: false,
+              createdAt: user.createdAt.toISOString(),
+            },
+          },
+        })
+      );
+      return;
+    }
+
+    if (!isSupportedCountry(user.localProfile.phoneNumberCountryISO)) {
+      log.error(`Phone number country is not supported: ${user.localProfile.phoneNumberCountryISO}`);
       res.status(500).json(
         standardResponse({
           isSuccess: false,
@@ -42,9 +59,9 @@ export const getUserById = async (
       return;
     }
 
-    const phoneNumber = parsePhoneNumber(user.phoneNumber, user.phoneNumberCountryISO)?.number;
+    const phoneNumber = parsePhoneNumber(user.localProfile.phoneNumber, user.localProfile.phoneNumberCountryISO)?.number;
     if (!phoneNumber) {
-      log.error(`Failed to parse phone number: ${user.phoneNumber}`);
+      log.error(`Failed to parse phone number: ${user.localProfile.phoneNumber}`);
       res.status(500).json(
         standardResponse({
           isSuccess: false,
@@ -62,13 +79,14 @@ export const getUserById = async (
         data: {
           user: {
             id: user.id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            isEmailVerified: user.isEmailVerified,
+            isProfileComplete: true,
+            givenName: user.localProfile.givenName,
+            familyName: user.localProfile.familyName,
+            email: user.localProfile.email,
+            isEmailVerified: user.localProfile.isEmailVerified,
             phoneNumber: phoneNumber,
-            isPhoneVerified: user.isPhoneVerified,
-            isSystemAdmin: user.isSystemAdmin,
+            isPhoneVerified: user.localProfile.isPhoneVerified,
+            isSystemAdmin: user.localProfile.isSystemAdmin,
             createdAt: user.createdAt.toISOString(),
           },
         },

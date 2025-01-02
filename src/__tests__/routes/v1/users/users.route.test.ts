@@ -26,12 +26,12 @@ describe("/v1/users", () => {
       expect(loggedUserResponse.body.isSuccess).toBe(true);
       expect(loggedUserResponse.body.data.user).toMatchObject({
         id: loggedUser.id,
-        firstName: loggedUser.firstName,
-        lastName: loggedUser.lastName,
-        email: loggedUser.email,
-        isEmailVerified: loggedUser.isEmailVerified,
-        isPhoneVerified: loggedUser.isPhoneVerified,
-        isSystemAdmin: loggedUser.isSystemAdmin,
+        givenName: loggedUser.localProfile!.givenName,
+        familyName: loggedUser.localProfile!.familyName,
+        email: loggedUser.localProfile!.email,
+        isEmailVerified: loggedUser.localProfile!.isEmailVerified,
+        isPhoneVerified: loggedUser.localProfile!.isPhoneVerified,
+        isSystemAdmin: loggedUser.localProfile!.isSystemAdmin,
         createdAt: loggedUser.createdAt.toISOString(),
       });
 
@@ -39,12 +39,12 @@ describe("/v1/users", () => {
       expect(userResponse.body.isSuccess).toBe(true);
       expect(userResponse.body.data.user).toMatchObject({
         id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        isEmailVerified: user.isEmailVerified,
-        isPhoneVerified: user.isPhoneVerified,
-        isSystemAdmin: user.isSystemAdmin,
+        givenName: user.localProfile!.givenName,
+        familyName: user.localProfile!.familyName,
+        email: user.localProfile!.email,
+        isEmailVerified: user.localProfile!.isEmailVerified,
+        isPhoneVerified: user.localProfile!.isPhoneVerified,
+        isSystemAdmin: user.localProfile!.isSystemAdmin,
         createdAt: user.createdAt.toISOString(),
       });
     });

@@ -3,16 +3,16 @@ import { PassportStatic } from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { normalizeError } from "@toolbox/common/errors";
 import { isEmailFormat } from "@utils/regex";
-import { User } from "@prisma/client";
 import parsePhoneNumber from "libphonenumber-js";
 import log from "@utils/logger";
 import UserService from "src/services/user.service";
+import { CompleteUser } from "src/globalTypes";
 
 export const localStrategy = (passport: PassportStatic) => {
   passport.use(
     new LocalStrategy({ usernameField: "identifier", passwordField: "password" }, async (identifier, password, done) => {
       try {
-        let user: User | null = null;
+        let user: CompleteUser | null = null;
 
         if (isEmailFormat(identifier)) {
           user = await UserService.getUserByEmail(identifier);
@@ -39,7 +39,11 @@ export const localStrategy = (passport: PassportStatic) => {
           return done(null, false, { message: "Invalid credentials" });
         }
 
-        const isValid = await argon2.verify(user.password, password);
+        if (!user.localProfile?.password) {
+          return done(null, false, { message: "Invalid credentials" });
+        }
+
+        const isValid = await argon2.verify(user.localProfile.password, password);
         if (!isValid) {
           return done(null, false, { message: "Invalid credentials" });
         }

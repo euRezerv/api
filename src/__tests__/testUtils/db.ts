@@ -37,14 +37,14 @@ export const authTestUser = async (identifier: string, plainPassword: string, ag
   await agent.post("/v1/users/auth/login").send({ identifier, password: plainPassword });
 };
 
-export const getTestUser = async () => {
+export const getTestLocalProfile = async () => {
   const plainPassword = `A${getRandomString(10)}1!`;
   const hashedPassword = await argon2.hash(plainPassword);
 
   return {
     data: {
-      firstName: "Test",
-      lastName: "User",
+      givenName: "Test",
+      familyName: "User",
       email: `test-${getRandomString(10, `${EN_ALPHABET_LOWERCASE}${DIGITS}`)}@test.com`,
       isEmailVerified: false,
       phoneNumberCountryISO: "RO",
@@ -52,34 +52,85 @@ export const getTestUser = async () => {
       isPhoneVerified: false,
       password: hashedPassword,
       isSystemAdmin: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      deletedAt: null,
     },
     plainPassword,
     hashedPassword,
   };
 };
 
-export const createTestUser = async (data: Partial<Prisma.UserCreateInput> = {}) => {
+export const getTestGoogleProfileData = () => {
+  return {
+    googleId: getRandomString(21),
+    accessToken: getRandomString(50),
+    refreshToken: getRandomString(50),
+    responseJson: {
+      given_name: "GoogleTest",
+      family_name: "GoogleUser",
+      email: `google-${getRandomString(10, `${EN_ALPHABET_LOWERCASE}${DIGITS}`)}@test.com`,
+      email_verified: true,
+    },
+  };
+};
+
+type CreateTestUserType = {
+  userData?: Partial<Prisma.UserCreateInput>;
+  localProfileData?: Partial<Omit<Prisma.LocalProfileCreateInput, "user">>;
+  googleProfileData?: Omit<Prisma.GoogleProfileCreateInput, "user">;
+};
+
+export const createTestUser = async ({ userData, localProfileData, googleProfileData }: CreateTestUserType = {}) => {
+  const testUserData = {
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    deletedAt: null,
+  };
+  const localProfile = (await getTestLocalProfile()).data;
+
   return await prisma.user.create({
     data: {
-      ...(await getTestUser()).data,
-      ...data,
+      ...testUserData,
+      ...userData,
+      localProfile: {
+        create: {
+          ...localProfile,
+          ...localProfileData,
+        },
+      },
+      ...(googleProfileData && {
+        googleProfile: {
+          create: {
+            ...googleProfileData,
+          },
+        },
+      }),
     },
+    include: { localProfile: true, googleProfile: true },
   });
+};
+
+type CreateAndAuthTestUserType = {
+  userData?: Partial<Prisma.UserCreateInput>;
+  localProfileData?: Omit<Partial<Prisma.LocalProfileCreateInput>, "password"> & { plainPassword?: string };
 };
 
 export const createAndAuthTestUser = async (
   agent: InstanceType<typeof TestAgent>,
-  data: Omit<Partial<Prisma.UserCreateInput>, "password"> & { plainPassword?: string } = {}
+  { userData = {}, localProfileData = {} }: CreateAndAuthTestUserType = {}
 ) => {
-  const userInfo = await getTestUser();
-  const plainPassword = data.plainPassword || userInfo.plainPassword;
+  const localProfile = await getTestLocalProfile();
+  const plainPassword = localProfileData.plainPassword || localProfile.plainPassword;
   const hashedPassword = await argon2.hash(plainPassword);
-  const user = await createTestUser({ ...userInfo.data, ...omitKeys(data, ["plainPassword"]), password: hashedPassword });
 
-  await authTestUser(user.email, plainPassword, agent);
+  const user = await createTestUser({
+    userData: userData,
+    localProfileData: {
+      ...localProfile.data,
+      ...omitKeys(localProfileData, ["plainPassword"]),
+      password: hashedPassword,
+    },
+  });
+
+  await authTestUser(user.localProfile!.email, plainPassword, agent);
 
   return user;
 };
