@@ -4,6 +4,7 @@ import { DIGITS, EN_ALPHABET, EN_ALPHABET_LOWERCASE, getRandomString } from "@to
 import prisma from "@utils/prisma";
 import TestAgent from "supertest/lib/agent";
 import { omitKeys } from "@toolbox/common/objects";
+import { parsePhoneNumberWithError } from "libphonenumber-js";
 
 export const clearTestDb = async () => {
   if (process.env.NODE_ENV !== "test") {
@@ -40,6 +41,9 @@ export const authTestUser = async (identifier: string, plainPassword: string, ag
 export const getTestLocalProfile = async () => {
   const plainPassword = `A${getRandomString(10)}1!`;
   const hashedPassword = await argon2.hash(plainPassword);
+  const phoneNumberCountryISO = "RO";
+  const phoneNumber = "7" + Math.random().toString().slice(2, 10);
+  const phoneNumberFormatted = parsePhoneNumberWithError(phoneNumber, phoneNumberCountryISO);
 
   return {
     data: {
@@ -49,6 +53,7 @@ export const getTestLocalProfile = async () => {
       isEmailVerified: false,
       phoneNumberCountryISO: "RO",
       phoneNumber: "7" + Math.random().toString().slice(2, 10),
+      phoneNumberFormatted: phoneNumberFormatted.number,
       isPhoneVerified: false,
       password: hashedPassword,
       isSystemAdmin: false,

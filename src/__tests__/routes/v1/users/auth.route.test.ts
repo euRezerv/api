@@ -34,7 +34,7 @@ describe("/v1/users/auth", () => {
         user: {
           id: user.id,
           email: user.localProfile!.email,
-          phoneNumber: user.localProfile!.phoneNumber,
+          phoneNumber: user.localProfile!.phoneNumberFormatted,
           givenName: user.localProfile!.givenName,
           familyName: user.localProfile!.familyName,
         },
