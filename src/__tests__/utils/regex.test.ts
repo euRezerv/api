@@ -8,7 +8,7 @@ describe("isEmailFormat", () => {
     expect(isEmailFormat("abc_def@mail.com")).toBe(true);
     expect(isEmailFormat("abc.def@mail-archive.com")).toBe(true);
     expect(isEmailFormat("abc.def@mail.org")).toBe(true);
-    expect(isEmailFormat("pleosnitapufoasa2000@gmail.com")).toBe(true);
+    expect(isEmailFormat("plosnitapufoasa2000@gmail.com")).toBe(true);
   });
 
   it("should return false for invalid email addresses", () => {
