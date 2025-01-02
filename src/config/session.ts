@@ -28,6 +28,7 @@ export default (app: Express) => {
       cookie: {
         secure: process.env.NODE_ENV === "production",
         maxAge: ms.days(2),
+        sameSite: "none",
       },
     })
   );
