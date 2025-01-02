@@ -370,4 +370,16 @@ describe("/v1/users/auth", () => {
       silenceLogs.mockRestore();
     });
   });
+
+  describe("GET /google", () => {
+    it("should redirect to Google login", async () => {
+      // act
+      const response = await agent.get("/v1/users/auth/google");
+
+      // assert
+      expect(response.status).toBe(302);
+      expect(response.header["location"]).toContain("https://accounts.google.com/o/oauth2/v2/auth");
+      expect(response.header["location"]).toContain(process.env.GOOGLE_CLIENT_ID);
+    });
+  });
 });
