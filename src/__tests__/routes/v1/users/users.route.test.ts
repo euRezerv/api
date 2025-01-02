@@ -1,3 +1,4 @@
+import prisma from "@utils/prisma";
 import { clearTestDb, createAndAuthTestUser, createTestUser } from "src/__tests__/testUtils/db";
 import createServer from "src/config/server";
 import supertest from "supertest";
@@ -9,6 +10,66 @@ describe("/v1/users", () => {
   beforeEach(async () => {
     agent = supertest.agent(createServer());
     await clearTestDb();
+  });
+
+  describe("GET /auth-user", () => {
+    it("should return a 200 and the authenticated user's data", async () => {
+      // arrange
+      const user = await createAndAuthTestUser(agent);
+
+      // act
+      const response = await agent.get("/v1/users/auth-user");
+
+      // assert
+      expect(response.status).toBe(200);
+      expect(response.body.isSuccess).toBe(true);
+      expect(response.body.data.user).toMatchObject({
+        id: user.id,
+        isProfileComplete: true,
+        givenName: user.localProfile!.givenName,
+        familyName: user.localProfile!.familyName,
+        email: user.localProfile!.email,
+        isEmailVerified: user.localProfile!.isEmailVerified,
+        phoneNumber: user.localProfile!.phoneNumberFormatted,
+        isPhoneVerified: user.localProfile!.isPhoneVerified,
+        isSystemAdmin: user.localProfile!.isSystemAdmin,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+      });
+    });
+
+    it("should return a 200 and the authenticated user's incomplete data", async () => {
+      // arrange
+      const incompleteUser = await createAndAuthTestUser(agent);
+      await prisma.localProfile.delete({
+        where: {
+          userId: incompleteUser.id,
+        },
+      });
+
+      // act
+      const response = await agent.get("/v1/users/auth-user");
+
+      // assert
+      expect(response.status).toBe(200);
+      expect(response.body.isSuccess).toBe(true);
+      expect(response.body.data.user).toMatchObject({
+        id: incompleteUser.id,
+        isProfileComplete: false,
+        createdAt: incompleteUser.createdAt.toISOString(),
+        updatedAt: incompleteUser.updatedAt.toISOString(),
+      });
+    });
+
+    it("should return a 401 if the user is not authenticated", async () => {
+      // act
+      const response = await agent.get("/v1/users/auth-user");
+
+      // assert
+      expect(response.status).toBe(401);
+      expect(response.body.isSuccess).toBe(false);
+      expect(response.body.message).toBe("Unauthorized");
+    });
   });
 
   describe("GET /:id", () => {

@@ -41,6 +41,7 @@ export const authTestUser = async (identifier: string, plainPassword: string, ag
 export const getTestLocalProfile = async () => {
   const plainPassword = `A${getRandomString(10)}1!`;
   const hashedPassword = await argon2.hash(plainPassword);
+
   const phoneNumberCountryISO = "RO";
   const phoneNumber = "7" + Math.random().toString().slice(2, 10);
   const phoneNumberFormatted = parsePhoneNumberWithError(phoneNumber, phoneNumberCountryISO);
