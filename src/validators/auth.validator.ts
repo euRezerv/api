@@ -5,7 +5,6 @@ import { isObjectEmpty } from "@toolbox/common/objects";
 import { standardResponse } from "@utils/responses";
 import { EMAIL_REGEX } from "@utils/regex";
 import { isSupportedCountry, isValidPhoneNumber } from "libphonenumber-js";
-import { isUppercase } from "@toolbox/common/strings";
 
 export const validateLogin: RequestHandler[] = [
   check("identifier").not().isEmpty({ ignore_whitespace: true }).withMessage("Identifier is required").toLowerCase(),
