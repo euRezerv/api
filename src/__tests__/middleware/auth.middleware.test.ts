@@ -4,7 +4,7 @@ import { standardResponse } from "@utils/responses";
 
 jest.mock("@utils/responses");
 
-describe("isAuthenticated.local", () => {
+describe("isAuthenticated", () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
   let next: NextFunction;
@@ -25,7 +25,7 @@ describe("isAuthenticated.local", () => {
     (req.isAuthenticated as unknown as jest.Mock).mockReturnValue(true);
 
     // act
-    isAuthenticated.local(req as Request, res as Response, next);
+    isAuthenticated(req as Request, res as Response, next);
 
     // assert
     expect(req.isAuthenticated).toHaveBeenCalled();
@@ -39,7 +39,7 @@ describe("isAuthenticated.local", () => {
     (req.isAuthenticated as unknown as jest.Mock).mockReturnValue(false);
 
     // act
-    isAuthenticated.local(req as Request, res as Response, next);
+    isAuthenticated(req as Request, res as Response, next);
 
     // assert
     expect(req.isAuthenticated).toHaveBeenCalled();
