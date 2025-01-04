@@ -86,6 +86,12 @@ export const HTTP_RESPONSES: Record<string, (props?: Partial<OpenAPIV3.ResponseO
       ...props,
     },
   }),
+  FORBIDDEN403: (props) => ({
+    403: {
+      description: "Forbidden",
+      ...props,
+    },
+  }),
   NOT_FOUND404: (props) => ({
     404: {
       description: "Not found",
@@ -113,20 +119,34 @@ export const HTTP_RESPONSES: Record<string, (props?: Partial<OpenAPIV3.ResponseO
  * @returns An OpenAPI ReferenceObject or RequestBodyObject.
  */
 export const jsonRequestBody = (
-  properties: Record<string, OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject>,
+  properties: Record<string, (OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject) & { isRequired?: boolean }>,
   extras: Omit<OpenAPIV3.RequestBodyObject, "content"> = {}
-): OpenAPIV3.RequestBodyObject => ({
-  required: true,
-  content: {
-    "application/json": {
-      schema: {
-        type: "object",
-        properties: properties,
+): OpenAPIV3.RequestBodyObject => {
+  const requiredFields = Object.entries(properties)
+    .filter(([, schema]) => schema.isRequired)
+    .map(([key]) => key);
+
+  const sanitizedProperties = Object.fromEntries(
+    Object.entries(properties).map(([key, schema]) => {
+      const { isRequired, ...rest } = schema; // Remove `isRequired`
+      return [key, rest];
+    })
+  );
+
+  return {
+    required: true,
+    content: {
+      "application/json": {
+        schema: {
+          type: "object",
+          properties: sanitizedProperties,
+          ...(requiredFields.length > 0 && { required: requiredFields }),
+        },
       },
     },
-  },
-  ...extras,
-});
+    ...extras,
+  };
+};
 
 export const paginationQueryParams: OpenAPIV3.ParameterObject[] = [
   {

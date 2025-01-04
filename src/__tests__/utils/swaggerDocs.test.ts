@@ -158,4 +158,33 @@ describe("jsonRequestBody", () => {
       },
     });
   });
+
+  it("should include required fields", () => {
+    // arrange
+    const properties: Record<string, (OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject) & { isRequired?: boolean }> = {
+      name: { type: "string", isRequired: true },
+      age: { type: "integer", isRequired: false },
+      country: { type: "string" },
+      city: { type: "string", isRequired: true },
+    };
+
+    // assert
+    expect(jsonRequestBody(properties)).toEqual({
+      required: true,
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              age: { type: "integer" },
+              country: { type: "string" },
+              city: { type: "string" },
+            },
+            required: ["name", "city"],
+          },
+        },
+      },
+    });
+  });
 });
