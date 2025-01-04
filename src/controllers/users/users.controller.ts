@@ -120,3 +120,5 @@ export const getUserById = async (
       .json(standardResponse({ isSuccess: false, res, message: "Something went wrong", errors: normalizeError(error) }));
   }
 };
+
+export const createOrUpdateUserLocalProfile = async (req: Request, res: Response) => {};
