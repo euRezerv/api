@@ -19,8 +19,8 @@ AuthDocs.add({
       summary: "Login a user",
       tags: ["Auth"],
       requestBody: jsonRequestBody({
-        identifier: { type: "string", description: "Email or phone number" },
-        password: { type: "string" },
+        identifier: { type: "string", description: "Email or phone number", isRequired: true },
+        password: { type: "string", isRequired: true },
       }),
       responses: {
         ...HTTP_RESPONSES.OK200({ description: "Logged in successfully" }),
@@ -54,12 +54,12 @@ AuthDocs.add({
       summary: "Register a new user",
       tags: ["Auth"],
       requestBody: jsonRequestBody({
-        givenName: { type: "string" },
-        familyName: { type: "string" },
-        email: { type: "string" },
-        phoneNumberCountryISO: { type: "string" },
-        phoneNumber: { type: "string" },
-        password: { type: "string" },
+        givenName: { type: "string", isRequired: true },
+        familyName: { type: "string", isRequired: true },
+        email: { type: "string", isRequired: true },
+        phoneNumberCountryISO: { type: "string", isRequired: true },
+        phoneNumber: { type: "string", isRequired: true },
+        password: { type: "string", isRequired: true },
       }),
       responses: {
         ...HTTP_RESPONSES.CREATED201({ description: "Registered successfully" }),

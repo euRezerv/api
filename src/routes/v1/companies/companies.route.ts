@@ -15,7 +15,7 @@ import {
 const router = Router();
 const CompaniesDocs = new SwaggerDocsManager();
 
-router.get("/", isAuthenticated.local, addPagination, validateGetCompanies, getCompanies);
+router.get("/", isAuthenticated, addPagination, validateGetCompanies, getCompanies);
 CompaniesDocs.add({
   "/v1/companies": {
     get: {
@@ -49,7 +49,7 @@ CompaniesDocs.add({
   },
 });
 
-router.get("/:id", isAuthenticated.local, validateGetCompanyById, getCompanyById);
+router.get("/:id", isAuthenticated, validateGetCompanyById, getCompanyById);
 CompaniesDocs.add({
   "/v1/companies/{id}": {
     get: {
@@ -76,7 +76,7 @@ CompaniesDocs.add({
   },
 });
 
-router.post("/", isAuthenticated.local, validateCreateCompany, createCompany);
+router.post("/", isAuthenticated, validateCreateCompany, createCompany);
 CompaniesDocs.add({
   "/v1/companies": {
     post: {
@@ -84,14 +84,14 @@ CompaniesDocs.add({
       tags: ["Companies"],
       ...cookieSecurity,
       requestBody: jsonRequestBody({
-        name: { type: "string" },
-        country: { type: "string" },
-        county: { type: "string" },
-        city: { type: "string" },
-        street: { type: "string" },
-        postalCode: { type: "string" },
-        latitude: { type: "number" },
-        longitude: { type: "number" },
+        name: { type: "string", isRequired: true },
+        country: { type: "string", isRequired: true },
+        county: { type: "string", isRequired: true },
+        city: { type: "string", isRequired: true },
+        street: { type: "string", isRequired: true },
+        postalCode: { type: "string", isRequired: true },
+        latitude: { type: "number", isRequired: true },
+        longitude: { type: "number", isRequired: true },
       }),
       responses: {
         ...HTTP_RESPONSES.CREATED201({ description: "Company created successfully" }),
