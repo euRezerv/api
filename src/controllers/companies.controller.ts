@@ -16,7 +16,7 @@ import { Response } from "express";
 import CompanyService from "src/services/company.service";
 
 export const getCompanies = async (
-  req: RequestWithQuery<GetCompaniesRequestType>,
+  req: RequestWithQuery<GetCompaniesRequestType["query"]>,
   res: Response<GetCompaniesResponseType>
 ) => {
   try {
@@ -94,7 +94,7 @@ export const getCompanies = async (
 };
 
 export const getCompanyById = async (
-  req: RequestWithParams<GetCompanyByIdRequestType>,
+  req: RequestWithParams<GetCompanyByIdRequestType["params"]>,
   res: Response<GetCompanyByIdResponseType>
 ) => {
   try {
@@ -148,7 +148,7 @@ export const getCompanyById = async (
 };
 
 export const createCompany = async (
-  req: RequestWithBody<CreateCompanyRequestType>,
+  req: RequestWithBody<CreateCompanyRequestType["body"]>,
   res: Response<CreateCompanyResponseType>
 ) => {
   try {

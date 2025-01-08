@@ -1,4 +1,4 @@
-import { PaginationParamsType, RequestWithQuery } from "@toolbox/request/types/types";
+import { PaginationRequestType, RequestWithQuery } from "@toolbox/request/types/types";
 import { standardResponse } from "@utils/responses";
 import { normalizeError } from "@toolbox/common/errors";
 import log from "@utils/logger";
@@ -16,7 +16,7 @@ export const addPagination = (req: Request, res: Response, next: NextFunction) =
         return;
       }
 
-      const { page = 1, pageSize = 10 } = (req as unknown as RequestWithQuery<PaginationParamsType>).query;
+      const { page = 1, pageSize = 10 } = (req as unknown as RequestWithQuery<PaginationRequestType["query"]>).query;
       req.pagination = {
         skip: (page - 1) * pageSize,
         take: pageSize,

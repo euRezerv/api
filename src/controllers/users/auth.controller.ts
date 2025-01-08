@@ -12,7 +12,11 @@ import argon2 from "argon2";
 import UserService from "src/services/user.service";
 import { CompleteUser } from "src/globalTypes";
 
-export const loginUser = (req: RequestWithBody<LoginRequestType>, res: Response<LoginResponseType>, next: NextFunction) => {
+export const loginUser = (
+  req: RequestWithBody<LoginRequestType["body"]>,
+  res: Response<LoginResponseType>,
+  next: NextFunction
+) => {
   passport.authenticate(
     "local",
     { session: true },
@@ -79,7 +83,10 @@ export const logoutUser = (req: Request, res: Response) => {
   res.json(standardResponse({ isSuccess: true, res, message: "Logged out successfully" }));
 };
 
-export const registerUser = async (req: RequestWithBody<RegisterRequestType>, res: Response<RegisterResponseType>) => {
+export const registerUser = async (
+  req: RequestWithBody<RegisterRequestType["body"]>,
+  res: Response<RegisterResponseType>
+) => {
   const { email, password, phoneNumber, phoneNumberCountryISO, givenName, familyName } = req.body;
 
   try {
