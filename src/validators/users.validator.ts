@@ -25,8 +25,8 @@ export const validateGetUserById: RequestHandler[] = [
   },
 ];
 
-export const validateCreateOrUpdateUserLocalProfile: RequestHandler[] = [
-  check("userId")
+export const validateCreateOrReplaceUserLocalProfile: RequestHandler[] = [
+  param("userId")
     .optional()
     .isString()
     .withMessage("User ID must be a string")
@@ -36,7 +36,7 @@ export const validateCreateOrUpdateUserLocalProfile: RequestHandler[] = [
       }
 
       if (!isSystemAdmin(req.user)) {
-        throw new Error("User is not a system admin");
+        throw new Error("Current user is not a system admin");
       }
 
       return true;
@@ -56,6 +56,8 @@ export const validateCreateOrUpdateUserLocalProfile: RequestHandler[] = [
     .isLength({ min: 2 })
     .withMessage("Family name must be at least 2 characters long"),
   check("email")
+    .trim()
+    .escape()
     .not()
     .isEmpty({ ignore_whitespace: true })
     .withMessage("Email is required")

@@ -9,6 +9,12 @@ type CreateUserProps = {
   googleProfileData?: Omit<Prisma.GoogleProfileCreateInput, "user">;
 };
 
+type CreateOrUpdateUserByIdProps = {
+  userData?: Omit<Prisma.UserCreateInput, "localProfile" | "googleProfile">;
+  localProfileData?: Omit<Prisma.LocalProfileCreateInput, "user">;
+  googleProfileData?: Omit<Prisma.GoogleProfileCreateInput, "user">;
+};
+
 export default class UserService {
   static async getUserById(userId: string, includeDeleted = false) {
     try {
@@ -77,6 +83,23 @@ export default class UserService {
     }
   }
 
+  static async getLocalProfileByUserId(userId: string, includeDeleted = false) {
+    try {
+      return await prisma.localProfile.findFirst({
+        where: {
+          userId,
+          user: {
+            deletedAt: includeDeleted ? undefined : null,
+          },
+        },
+        include: { user: true },
+      });
+    } catch (error) {
+      log.error(error);
+      throw normalizeError(error);
+    }
+  }
+
   static async createUser({ userData, localProfileData, googleProfileData }: CreateUserProps) {
     try {
       return await prisma.user.create({
@@ -84,6 +107,29 @@ export default class UserService {
           ...userData,
           localProfile: localProfileData ? { create: localProfileData } : undefined,
           googleProfile: googleProfileData ? { create: googleProfileData } : undefined,
+        },
+        include: { localProfile: true, googleProfile: true },
+      });
+    } catch (error) {
+      log.error(error);
+      throw normalizeError(error);
+    }
+  }
+
+  static async createOrUpdateUserById(
+    userId: string,
+    { userData, localProfileData, googleProfileData }: CreateOrUpdateUserByIdProps = {}
+  ) {
+    try {
+      return await prisma.user.update({
+        where: { id: userId },
+        data: {
+          updatedAt: new Date(),
+          ...userData,
+          localProfile: localProfileData ? { upsert: { create: localProfileData, update: localProfileData } } : undefined,
+          googleProfile: googleProfileData
+            ? { upsert: { create: googleProfileData, update: googleProfileData } }
+            : undefined,
         },
         include: { localProfile: true, googleProfile: true },
       });

@@ -1,17 +1,17 @@
 import { isAuthenticated } from "../../../middleware/auth.middleware";
 import { Router } from "express";
 import { cookieSecurity, HTTP_RESPONSES, jsonRequestBody, SwaggerDocsManager } from "@utils/swaggerDocs";
-import { validateCreateOrUpdateUserLocalProfile, validateGetUserById } from "src/validators/users.validator";
-import { createOrUpdateUserLocalProfile, getAuthUser, getUserById } from "src/controllers/users/users.controller";
+import { validateCreateOrReplaceUserLocalProfile, validateGetUserById } from "src/validators/users.validator";
+import { createOrReplaceUserLocalProfile, getCurrentUser, getUserById } from "src/controllers/users/users.controller";
 
 const router = Router();
 const UsersDocs = new SwaggerDocsManager();
 
-router.get("/auth-user", isAuthenticated, getAuthUser);
+router.get("/current-user", isAuthenticated, getCurrentUser);
 UsersDocs.add({
-  "/v1/users/auth-user": {
+  "/v1/users/current-user": {
     get: {
-      summary: "Get authenticated user data",
+      summary: "Get currently authenticated user data",
       tags: ["Users"],
       ...cookieSecurity,
       responses: {
@@ -51,19 +51,19 @@ UsersDocs.add({
   },
 });
 
-router.put("/local-profile", isAuthenticated, validateCreateOrUpdateUserLocalProfile, createOrUpdateUserLocalProfile);
+router.put(
+  ["/local-profile", "/local-profile/:userId"],
+  isAuthenticated,
+  validateCreateOrReplaceUserLocalProfile,
+  createOrReplaceUserLocalProfile
+);
 UsersDocs.add({
   "/v1/users/local-profile": {
     put: {
-      summary: "Create or update user local profile",
+      summary: "Create or replace user local profile for the logged-in user",
       tags: ["Users"],
       ...cookieSecurity,
       requestBody: jsonRequestBody({
-        userId: {
-          type: "string",
-          default: undefined,
-          description: "Must be system admin to update other users local profile",
-        },
         givenName: { type: "string", isRequired: true },
         familyName: { type: "string", isRequired: true },
         email: { type: "string", isRequired: true },
@@ -74,8 +74,40 @@ UsersDocs.add({
         ...HTTP_RESPONSES.OK200(),
         ...HTTP_RESPONSES.BAD_REQUEST400({ description: "Validation error" }),
         ...HTTP_RESPONSES.UNAUTHORIZED401(),
-        ...HTTP_RESPONSES.FORBIDDEN403({ description: "Must be system admin to update other users local profile" }),
         ...HTTP_RESPONSES.NOT_FOUND404({ description: "User not found" }),
+        ...HTTP_RESPONSES.CONFLICT409({ description: "Credentials already exist" }),
+        ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500({ description: "Internal server error" }),
+      },
+    },
+  },
+  "/v1/users/local-profile/{userId}": {
+    put: {
+      summary: "Create or replace user local profile for a specific user",
+      tags: ["Users"],
+      ...cookieSecurity,
+      parameters: [
+        {
+          in: "path",
+          name: "userId",
+          required: true,
+          schema: { type: "string", default: undefined },
+          description: "Must be system admin to modify another user's local profile",
+        },
+      ],
+      requestBody: jsonRequestBody({
+        givenName: { type: "string", isRequired: true },
+        familyName: { type: "string", isRequired: true },
+        email: { type: "string", isRequired: true },
+        phoneNumberCountryISO: { type: "string", isRequired: true },
+        phoneNumber: { type: "string", isRequired: true },
+      }),
+      responses: {
+        ...HTTP_RESPONSES.OK200(),
+        ...HTTP_RESPONSES.BAD_REQUEST400({ description: "Validation error" }),
+        ...HTTP_RESPONSES.UNAUTHORIZED401(),
+        ...HTTP_RESPONSES.FORBIDDEN403({ description: "Must be system admin to modify another user's local profile" }),
+        ...HTTP_RESPONSES.NOT_FOUND404({ description: "User not found" }),
+        ...HTTP_RESPONSES.CONFLICT409({ description: "Credentials already exist" }),
         ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500({ description: "Internal server error" }),
       },
     },
