@@ -286,6 +286,31 @@ describe("/v1/users/auth", () => {
       });
     });
 
+    it("should return a 400 if the phoneNumber does not match the country code", async () => {
+      // arrange
+      const payload = await getRegisterPayload();
+      payload.phoneNumberCountryISO = "RO";
+      payload.phoneNumber = "+41712345678";
+
+      // act
+      const res = await agent.post("/v1/users/auth/register").send(payload);
+
+      // assert
+      expect(res.status).toBe(400);
+      expect(res.body).toMatchObject({
+        isSuccess: false,
+        message: "Validation error",
+        errors: [
+          {
+            message: "Phone number does not match the country code",
+            field: "phoneNumber",
+            fieldType: "body",
+            value: payload.phoneNumber,
+          },
+        ],
+      });
+    });
+
     it("should return a 409 if the email already exists", async () => {
       // arrange
       const payload = await getRegisterPayload();

@@ -96,6 +96,25 @@ export const registerUser = async (req: RequestWithBody<RegisterRequestType>, re
     }
 
     const phoneNumberFormatted = parsePhoneNumberWithError(phoneNumber, phoneNumberCountryISO);
+    if (phoneNumberFormatted.country !== phoneNumberCountryISO) {
+      res.status(400).json(
+        standardResponse({
+          isSuccess: false,
+          res,
+          message: "Validation error",
+          errors: [
+            {
+              message: "Phone number does not match the country code",
+              field: "phoneNumber",
+              fieldType: "body",
+              value: phoneNumber,
+            },
+          ],
+        })
+      );
+      return;
+    }
+
     const existingUserByPhoneNumber = await UserService.getUserByPhoneNumber(
       phoneNumberFormatted.nationalNumber,
       phoneNumberCountryISO,
