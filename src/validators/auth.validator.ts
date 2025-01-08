@@ -36,6 +36,8 @@ export const validateRegister: RequestHandler[] = [
     .isLength({ min: 2 })
     .withMessage("Family name must be at least 2 characters long"),
   check("email")
+    .trim()
+    .escape()
     .not()
     .isEmpty({ ignore_whitespace: true })
     .withMessage("Email is required")
