@@ -1,8 +1,12 @@
 import { isAuthenticated } from "../../../middleware/auth.middleware";
 import { addPagination } from "../../../middleware/pagination.middleware";
 import { Router } from "express";
-import { createCompany, getCompanies, getCompanyById } from "src/controllers/companies.controller";
-import { validateCreateCompany, validateGetCompanies, validateGetCompanyById } from "src/validators/companies.validator";
+import {
+  validateCreateCompany,
+  validateGetCompanies,
+  validateGetCompanyById,
+  validateInviteEmployeeToCompany,
+} from "src/validators/companies.validator";
 import { CompanyEmployeeRole } from "@prisma/client";
 import {
   cookieSecurity,
@@ -11,6 +15,10 @@ import {
   paginationQueryParams,
   SwaggerDocsManager,
 } from "@utils/swaggerDocs";
+import { getCompanies } from "src/controllers/companies/getCompanies.controller";
+import { getCompanyById } from "src/controllers/companies/getCompanyById.controller";
+import { createCompany } from "src/controllers/companies/createCompany.controller";
+import { inviteEmployeeToCompany } from "src/controllers/companies/inviteEmployeeToCompany.controller";
 
 const router = Router();
 const CompaniesDocs = new SwaggerDocsManager();
@@ -76,6 +84,26 @@ CompaniesDocs.add({
   },
 });
 
+// router.get("/:id/employees", (req, res) => {
+//   res.status(501).send("Not implemented");
+// });
+// CompaniesDocs.add({
+//   "/v1/companies/{id}/employees": {
+//     get: {
+//       summary: "Get company employees",
+//       tags: ["Companies"],
+//       parameters: [],
+//       responses: {
+//         ...HTTP_RESPONSES.OK200(),
+//         ...HTTP_RESPONSES.BAD_REQUEST400({ description: "Validation error" }),
+//         ...HTTP_RESPONSES.UNAUTHORIZED401(),
+//         ...HTTP_RESPONSES.NOT_FOUND404({ description: "Company not found" }),
+//         ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500({ description: "Internal server error" }),
+//       },
+//     },
+//   },
+// });
+
 router.post("/", isAuthenticated, validateCreateCompany, createCompany);
 CompaniesDocs.add({
   "/v1/companies": {
@@ -97,6 +125,38 @@ CompaniesDocs.add({
         ...HTTP_RESPONSES.CREATED201({ description: "Company created successfully" }),
         ...HTTP_RESPONSES.BAD_REQUEST400({ description: "Validation error" }),
         ...HTTP_RESPONSES.UNAUTHORIZED401(),
+        ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500({ description: "Internal server error" }),
+      },
+    },
+  },
+});
+
+router.post("/:id/invitations", isAuthenticated, validateInviteEmployeeToCompany, inviteEmployeeToCompany);
+CompaniesDocs.add({
+  "/v1/companies/{id}/invitations": {
+    post: {
+      summary: "Invite employee to company",
+      tags: ["Companies"],
+      ...cookieSecurity,
+      parameters: [
+        {
+          in: "path",
+          name: "id",
+          required: true,
+          schema: { type: "string" },
+          description: "Company id",
+        },
+      ],
+      requestBody: jsonRequestBody({
+        invitedUserId: { type: "string", isRequired: true },
+        role: { type: "string", isRequired: true, enum: Object.values(CompanyEmployeeRole) },
+      }),
+      responses: {
+        ...HTTP_RESPONSES.CREATED201({ description: "Invitation sent successfully" }),
+        ...HTTP_RESPONSES.BAD_REQUEST400({ description: "Validation error" }),
+        ...HTTP_RESPONSES.UNAUTHORIZED401(),
+        ...HTTP_RESPONSES.FORBIDDEN403({ description: "Sender must be an employee of the company" }),
+        ...HTTP_RESPONSES.NOT_FOUND404({ description: "Company not found" }),
         ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500({ description: "Internal server error" }),
       },
     },

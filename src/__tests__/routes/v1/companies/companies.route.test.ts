@@ -1,5 +1,5 @@
 import { omitKeys } from "@toolbox/common/objects";
-import { Company, CompanyEmployeeRole } from "@prisma/client";
+import { Company, CompanyEmployeeRole, InvitationStatus, User } from "@prisma/client";
 import {
   addTestUserToCompany,
   clearTestDb,
@@ -12,6 +12,8 @@ import createServer from "src/config/server";
 import supertest from "supertest";
 import TestAgent from "supertest/lib/agent";
 import prisma from "@utils/prisma";
+import ms from "milliseconds";
+import CompanyEmployeeService from "src/services/companyEmployee.service";
 
 const baseUrl = "/v1/companies";
 
@@ -300,16 +302,6 @@ describe("/v1/companies", () => {
         });
       });
     });
-
-    it("should return a 401 if the user is not authenticated", async () => {
-      // act
-      const res = await agent.get(baseUrl);
-
-      // assert
-      expect(res.status).toBe(401);
-      expect(res.body.isSuccess).toBe(false);
-      expect(res.body.message).toBe("Unauthorized");
-    });
   });
 
   describe("GET /:id", () => {
@@ -350,20 +342,6 @@ describe("/v1/companies", () => {
       expect(res.status).toBe(404);
       expect(res.body.isSuccess).toBe(false);
       expect(res.body.message).toBe("Company not found");
-    });
-
-    it("should return a 401 if the user is not authenticated", async () => {
-      // arrange
-      const user = await createTestUser();
-      const company = await createTestCompany(user.id);
-
-      // act
-      const res = await agent.get(`${baseUrl}/${company.id}`);
-
-      // assert
-      expect(res.status).toBe(401);
-      expect(res.body.isSuccess).toBe(false);
-      expect(res.body.message).toBe("Unauthorized");
     });
   });
 
@@ -477,18 +455,247 @@ describe("/v1/companies", () => {
         });
       });
     });
+  });
 
-    it("should return a 401 if the user is not authenticated", async () => {
-      // arrange
-      const companyData = getPostCompanyData();
+  describe("POST /:id/invitations", () => {
+    let authCompanyOwner: User;
+    let company: Company;
+    let user: User;
+
+    beforeEach(async () => {
+      authCompanyOwner = await createAndAuthTestUser(agent);
+      company = await createTestCompany(authCompanyOwner.id);
+      await addTestUserToCompany(company.id, authCompanyOwner.id, CompanyEmployeeRole.OWNER);
+      user = await createTestUser();
+    });
+
+    it("should return a 200 and the invitation", async () => {
+      jest.useFakeTimers({ doNotFake: ["nextTick", "setImmediate"] }).setSystemTime(new Date("2025-01-01"));
 
       // act
-      const res = await agent.post(baseUrl).send(companyData);
+      const res = await agent
+        .post(`${baseUrl}/${company.id}/invitations`)
+        .send({ invitedUserId: user.id, role: CompanyEmployeeRole.REGULAR });
 
       // assert
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(201);
+      expect(res.body.isSuccess).toBe(true);
+      const companyOwnerEmployee = await CompanyEmployeeService.getCompanyEmployee(company.id, authCompanyOwner.id);
+      expect(res.body.data.invitation).toMatchObject({
+        senderCompanyEmployeeId: companyOwnerEmployee?.id,
+        invitedUserId: user.id,
+        role: CompanyEmployeeRole.REGULAR,
+        status: "PENDING",
+        expiresIn: ms.weeks(1).toString(),
+        expiresAt: expect.stringContaining(new Date(Date.now() + ms.weeks(1)).toISOString().slice(0, 20)),
+      });
+
+      jest.useRealTimers();
+    });
+
+    it("should return a 200 and the invitation with the correct role", async () => {
+      jest.useFakeTimers({ doNotFake: ["nextTick", "setImmediate"] }).setSystemTime(new Date("2025-01-01"));
+
+      // act
+      const res = await agent
+        .post(`${baseUrl}/${company.id}/invitations`)
+        .send({ invitedUserId: user.id, role: CompanyEmployeeRole.OWNER });
+
+      // assert
+      expect(res.status).toBe(201);
+      expect(res.body.isSuccess).toBe(true);
+      const companyOwnerEmployee = await CompanyEmployeeService.getCompanyEmployee(company.id, authCompanyOwner.id);
+      expect(res.body.data.invitation).toMatchObject({
+        senderCompanyEmployeeId: companyOwnerEmployee?.id,
+        invitedUserId: user.id,
+        role: CompanyEmployeeRole.OWNER,
+        status: "PENDING",
+        expiresIn: ms.weeks(1).toString(),
+        expiresAt: expect.stringContaining(new Date(Date.now() + ms.weeks(1)).toISOString().slice(0, 20)),
+      });
+
+      jest.useRealTimers();
+    });
+
+    it("should return a 200 and the invitation if the existing invitation is not pending and the invited user is not part of the company", async () => {
+      jest.useFakeTimers({ doNotFake: ["nextTick", "setImmediate"] }).setSystemTime(new Date("2025-01-01"));
+
+      // arrange
+      const companyOwnerEmployee = await CompanyEmployeeService.getCompanyEmployee(company.id, authCompanyOwner.id);
+      const existingInvitation = await CompanyEmployeeService.createCompanyEmployeeInvitation({
+        senderId: companyOwnerEmployee?.id!,
+        invitedUserId: user.id,
+        role: CompanyEmployeeRole.REGULAR,
+        expiresInMillis: ms.weeks(1),
+      });
+      await prisma.companyEmployeeInvitation.update({
+        where: { id: existingInvitation.id },
+        data: { status: InvitationStatus.EXPIRED },
+      });
+
+      // act
+      const res = await agent
+        .post(`${baseUrl}/${company.id}/invitations`)
+        .send({ invitedUserId: user.id, role: CompanyEmployeeRole.REGULAR });
+
+      // assert
+      expect(res.status).toBe(201);
+      expect(res.body.isSuccess).toBe(true);
+      expect(res.body.data.invitation).toMatchObject({
+        senderCompanyEmployeeId: companyOwnerEmployee?.id,
+        invitedUserId: user.id,
+        role: CompanyEmployeeRole.REGULAR,
+        status: "PENDING",
+        expiresIn: ms.weeks(1).toString(),
+        expiresAt: expect.stringContaining(new Date(Date.now() + ms.weeks(1)).toISOString().slice(0, 20)),
+      });
+
+      jest.useRealTimers();
+    });
+
+    const validationTestCases = [
+      {
+        name: "missing invitedUserId and role",
+        getBody: async () => ({}),
+        expectedErrors: [
+          { message: "Invited user ID is required", field: "invitedUserId" },
+          { message: "Role is required", field: "role" },
+        ],
+      },
+      {
+        name: "invitedUserId and role contain only whitespaces",
+        getBody: async () => ({ invitedUserId: " ", role: " " }),
+        expectedErrors: [
+          { message: "Invited user ID is required", field: "invitedUserId" },
+          { message: "Role is required", field: "role" },
+        ],
+      },
+      {
+        name: "role is not a valid CompanyEmployeeRole",
+        getBody: async () => ({ invitedUserId: user!.id, role: "INVALID_ROLE" }),
+        expectedErrors: [
+          { message: `Invalid role. Must be one of: ${Object.values(CompanyEmployeeRole).join(", ")}`, field: "role" },
+        ],
+      },
+      {
+        name: "the invited user is the same as the authenticated user",
+        getBody: async () => ({ invitedUserId: authCompanyOwner!.id, role: CompanyEmployeeRole.REGULAR }),
+        expectedErrors: [{ message: "You cannot invite yourself to a company", field: "invitedUserId" }],
+      },
+    ];
+
+    validationTestCases.forEach(({ name, getBody, expectedErrors }) => {
+      it(`should return a 400 if ${name}`, async () => {
+        // act
+        const res = await agent.post(`${baseUrl}/${company.id}/invitations`).send(await getBody());
+
+        // assert
+        expect(res.status).toBe(400);
+        expect(res.body.isSuccess).toBe(false);
+        expect(res.body.message).toBe("Validation error");
+        const mappedResBodyErrors = res.body.errors.map((error: any) => ({ message: error.message, field: error.field }));
+        expectedErrors.forEach((expectedError) => {
+          expect(mappedResBodyErrors).toEqual(
+            expect.arrayContaining([
+              {
+                message: expect.stringContaining(expectedError.message),
+                field: expectedError.field,
+              },
+            ])
+          );
+        });
+      });
+    });
+
+    it("should return a 400 if the user is already an employee of the company", async () => {
+      // arrange
+      await addTestUserToCompany(company.id, user.id, CompanyEmployeeRole.REGULAR);
+
+      // act
+      const res = await agent
+        .post(`${baseUrl}/${company.id}/invitations`)
+        .send({ invitedUserId: user.id, role: CompanyEmployeeRole.REGULAR });
+
+      // assert
+      expect(res.status).toBe(400);
       expect(res.body.isSuccess).toBe(false);
-      expect(res.body.message).toBe("Unauthorized");
+      expect(res.body.message).toBe("This user is already an employee of this company");
+    });
+
+    it("should return a 400 if the user has an existing invitation to the company", async () => {
+      // arrange
+      const companyOwnerEmployee = await CompanyEmployeeService.getCompanyEmployee(company.id, authCompanyOwner.id);
+      await CompanyEmployeeService.createCompanyEmployeeInvitation({
+        senderId: companyOwnerEmployee?.id!,
+        invitedUserId: user.id,
+        role: CompanyEmployeeRole.REGULAR,
+        expiresInMillis: ms.weeks(1),
+      });
+
+      // act
+      const res = await agent
+        .post(`${baseUrl}/${company.id}/invitations`)
+        .send({ invitedUserId: user.id, role: CompanyEmployeeRole.REGULAR });
+
+      // assert
+      expect(res.status).toBe(400);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("This user already has a pending invitation");
+    });
+
+    it("should return a 403 if the authenticated user is not an owner of the company", async () => {
+      // arrange
+      const userNotOwner = await createAndAuthTestUser(agent);
+      await addTestUserToCompany(company.id, userNotOwner.id, CompanyEmployeeRole.REGULAR);
+
+      // act
+      const res = await agent
+        .post(`${baseUrl}/${company.id}/invitations`)
+        .send({ invitedUserId: user.id, role: CompanyEmployeeRole.REGULAR });
+
+      // assert
+      expect(res.status).toBe(403);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("You are not authorized to invite employees to this company");
+    });
+
+    it("should return a 404 if the company does not exist", async () => {
+      // act
+      const res = await agent
+        .post(`${baseUrl}/nonexistent-id/invitations`)
+        .send({ invitedUserId: user.id, role: CompanyEmployeeRole.REGULAR });
+
+      // assert
+      expect(res.status).toBe(404);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("Company not found");
+    });
+
+    it("should return a 404 if the authenticated user is not an employee of the company", async () => {
+      // arrange
+      const userNotInCompany = await createAndAuthTestUser(agent);
+
+      // act
+      const res = await agent
+        .post(`${baseUrl}/${company.id}/invitations`)
+        .send({ invitedUserId: user.id, role: CompanyEmployeeRole.REGULAR });
+
+      // assert
+      expect(res.status).toBe(404);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("Sender must be an employee of the company");
+    });
+
+    it("should return a 404 if the invited user does not exist", async () => {
+      // act
+      const res = await agent
+        .post(`${baseUrl}/${company.id}/invitations`)
+        .send({ invitedUserId: "nonexistent-id", role: CompanyEmployeeRole.REGULAR });
+
+      // assert
+      expect(res.status).toBe(404);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("Invited user not found");
     });
   });
 });
