@@ -2,12 +2,12 @@ import { CompanyEmployeeRole, Prisma } from "@prisma/client";
 import { normalizeError } from "@toolbox/common/errors";
 import log from "@utils/logger";
 import prisma from "@utils/prisma";
+import CompanyEmployeeService from "./companyEmployee.service";
 
 type GetAllProps = { skip?: number; take?: number; filters?: Prisma.CompanyWhereInput };
 type GetCompaniesCountProps = { filters?: Prisma.CompanyWhereInput };
 type CreateCompanyProps = { createdById: string; data: Omit<Prisma.CompanyCreateInput, "createdBy"> };
 type UpdateCompanyProps = { companyId: string; data: Prisma.CompanyUpdateInput };
-type AddEmployeeToCompanyProps = { companyId: string; employeeId: string; role: CompanyEmployeeRole };
 
 export default class CompanyService {
   static async getCompanyById(companyId: string) {
@@ -54,7 +54,11 @@ export default class CompanyService {
     try {
       const company = await prisma.company.create({ data: { ...data, createdBy: { connect: { id: createdById } } } });
 
-      await this.addEmployeeToCompany({ companyId: company.id, employeeId: createdById, role: CompanyEmployeeRole.OWNER });
+      await CompanyEmployeeService.addEmployeeToCompany({
+        companyId: company.id,
+        employeeId: createdById,
+        role: CompanyEmployeeRole.OWNER,
+      });
 
       return company;
     } catch (error) {
@@ -68,23 +72,6 @@ export default class CompanyService {
       const company = await prisma.company.update({ where: { id: companyId, deletedAt: null }, data });
 
       return company;
-    } catch (error) {
-      log.error(error);
-      throw normalizeError(error);
-    }
-  }
-
-  static async addEmployeeToCompany({ companyId, employeeId, role }: AddEmployeeToCompanyProps) {
-    try {
-      const companyEmployee = await prisma.companyEmployee.create({
-        data: {
-          companyId,
-          employeeId,
-          role,
-        },
-      });
-
-      return companyEmployee;
     } catch (error) {
       log.error(error);
       throw normalizeError(error);
