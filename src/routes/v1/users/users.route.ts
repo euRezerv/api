@@ -51,46 +51,19 @@ UsersDocs.add({
   },
 });
 
-router.put(
-  ["/local-profile", "/local-profile/:userId"],
-  isAuthenticated,
-  validateCreateOrReplaceUserLocalProfile,
-  createOrReplaceUserLocalProfile
-);
+router.put("/local-profile", isAuthenticated, validateCreateOrReplaceUserLocalProfile, createOrReplaceUserLocalProfile);
 UsersDocs.add({
   "/v1/users/local-profile": {
     put: {
       summary: "Create or replace user local profile for the logged-in user",
       tags: ["Users"],
       ...cookieSecurity,
-      requestBody: jsonRequestBody({
-        givenName: { type: "string", isRequired: true },
-        familyName: { type: "string", isRequired: true },
-        email: { type: "string", isRequired: true },
-        phoneNumberCountryISO: { type: "string", isRequired: true },
-        phoneNumber: { type: "string", isRequired: true },
-      }),
-      responses: {
-        ...HTTP_RESPONSES.OK200(),
-        ...HTTP_RESPONSES.BAD_REQUEST400({ description: "Validation error" }),
-        ...HTTP_RESPONSES.UNAUTHORIZED401(),
-        ...HTTP_RESPONSES.NOT_FOUND404({ description: "User not found" }),
-        ...HTTP_RESPONSES.CONFLICT409({ description: "Credentials already exist" }),
-        ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500({ description: "Internal server error" }),
-      },
-    },
-  },
-  "/v1/users/local-profile/{userId}": {
-    put: {
-      summary: "Create or replace user local profile for a specific user",
-      tags: ["Users"],
-      ...cookieSecurity,
       parameters: [
         {
-          in: "path",
+          in: "query",
           name: "userId",
-          required: true,
-          schema: { type: "string", default: undefined },
+          required: false,
+          schema: { type: "string" },
           description: "Must be system admin to modify another user's local profile",
         },
       ],
@@ -105,7 +78,6 @@ UsersDocs.add({
         ...HTTP_RESPONSES.OK200(),
         ...HTTP_RESPONSES.BAD_REQUEST400({ description: "Validation error" }),
         ...HTTP_RESPONSES.UNAUTHORIZED401(),
-        ...HTTP_RESPONSES.FORBIDDEN403({ description: "Must be system admin to modify another user's local profile" }),
         ...HTTP_RESPONSES.NOT_FOUND404({ description: "User not found" }),
         ...HTTP_RESPONSES.CONFLICT409({ description: "Credentials already exist" }),
         ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500({ description: "Internal server error" }),

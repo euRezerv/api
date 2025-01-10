@@ -1,4 +1,4 @@
-import { check, param } from "express-validator";
+import { check, param, query } from "express-validator";
 import validationResultFormatter from "./validationResultFormatter";
 import { standardResponse } from "@utils/responses";
 import { isObjectEmpty } from "@toolbox/common/objects";
@@ -26,7 +26,7 @@ export const validateGetUserById: RequestHandler[] = [
 ];
 
 export const validateCreateOrReplaceUserLocalProfile: RequestHandler[] = [
-  param("userId")
+  query("userId")
     .optional()
     .isString()
     .withMessage("User ID must be a string")

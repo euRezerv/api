@@ -1,4 +1,4 @@
-import { RequestWithBody, RequestWithParams } from "@toolbox/request/types/types";
+import { RequestWithBody, RequestWithPath, RequestWithQuery } from "@toolbox/request/types/types";
 import { CreateOrReplaceUserLocalProfileRequestType, GetUserByIdRequestType } from "@toolbox/request/types/users";
 import { standardResponse } from "@utils/responses";
 import {
@@ -60,7 +60,7 @@ export const getCurrentUser = async (req: Request, res: Response<GetCurrentUserR
 };
 
 export const getUserById = async (
-  req: RequestWithParams<GetUserByIdRequestType["params"]>,
+  req: RequestWithPath<GetUserByIdRequestType["path"]>,
   res: Response<GetUserByIdResponseType>
 ) => {
   try {
@@ -128,11 +128,11 @@ export const getUserById = async (
 
 export const createOrReplaceUserLocalProfile = async (
   req: RequestWithBody<CreateOrReplaceUserLocalProfileRequestType["body"]> &
-    RequestWithParams<CreateOrReplaceUserLocalProfileRequestType["params"]>,
+    RequestWithQuery<CreateOrReplaceUserLocalProfileRequestType["query"]>,
   res: Response<CreateOrReplaceUserLocalProfileResponseType>
 ) => {
   const { givenName, familyName, email, phoneNumberCountryISO, phoneNumber } = req.body;
-  const { userId } = req.params;
+  const { userId } = req.query;
   const userIdToCreateOrReplace = userId || req.user?.id;
 
   try {

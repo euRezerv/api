@@ -399,7 +399,7 @@ describe("/v1/users", () => {
     });
   });
 
-  describe("PUT /local-profile/:userId", () => {
+  describe("PUT /local-profile?userId", () => {
     const getNewLocalProfileData = async () => {
       const data = (await getTestLocalProfile()).data;
 
@@ -423,7 +423,7 @@ describe("/v1/users", () => {
       ).number;
 
       // act
-      const res = await agent.put(`/v1/users/local-profile/${user.id}`).send(updatedData);
+      const res = await agent.put("/v1/users/local-profile").query({ userId: user.id }).send(updatedData);
 
       // assert
       expect(res.status).toBe(200);
@@ -451,7 +451,7 @@ describe("/v1/users", () => {
       ).number;
 
       // act
-      const res = await agent.put(`/v1/users/local-profile/${user.id}`).send(updatedData);
+      const res = await agent.put("/v1/users/local-profile").query({ userId: user.id }).send(updatedData);
 
       // assert
       expect(res.status).toBe(200);
@@ -476,7 +476,7 @@ describe("/v1/users", () => {
       };
 
       // act
-      const res = await agent.put(`/v1/users/local-profile/${user.id}`).send(updatedData);
+      const res = await agent.put("/v1/users/local-profile").query({ userId: user.id }).send(updatedData);
 
       // assert
       expect(res.status).toBe(200);
@@ -496,7 +496,7 @@ describe("/v1/users", () => {
       const updatedData = await getNewLocalProfileData();
 
       // act
-      const res = await agent.put(`/v1/users/local-profile/${user.id}`).send(updatedData);
+      const res = await agent.put("/v1/users/local-profile").query({ userId: user.id }).send(updatedData);
 
       // assert
       expect(res.status).toBe(400);
@@ -557,7 +557,7 @@ describe("/v1/users", () => {
         const userToUpdate = await createTestUser();
 
         // act
-        const res = await agent.put(`/v1/users/local-profile/${userToUpdate.id}`).send(localProfileData);
+        const res = await agent.put("/v1/users/local-profile").query({ userId: userToUpdate.id }).send(localProfileData);
 
         // assert
         expect(res.status).toBe(400);
@@ -588,7 +588,7 @@ describe("/v1/users", () => {
       };
 
       // act
-      const res = await agent.put(`/v1/users/local-profile/${userToUpdate.id}`).send(localProfileData);
+      const res = await agent.put("/v1/users/local-profile").query({ userId: userToUpdate.id }).send(localProfileData);
 
       // assert
       expect(res.status).toBe(400);
@@ -608,7 +608,7 @@ describe("/v1/users", () => {
       const updatedData = await getNewLocalProfileData();
 
       // act
-      const res = await agent.put(`/v1/users/local-profile/nonexistent-id`).send(updatedData);
+      const res = await agent.put("/v1/users/local-profile").query({ userId: "nonexistent-id" }).send(updatedData);
 
       // assert
       expect(res.status).toBe(404);
@@ -626,7 +626,7 @@ describe("/v1/users", () => {
       };
 
       // act
-      const res = await agent.put(`/v1/users/local-profile/${user.id}`).send(updatedData);
+      const res = await agent.put("/v1/users/local-profile").query({ userId: user.id }).send(updatedData);
 
       // assert
       expect(res.status).toBe(409);
@@ -645,7 +645,7 @@ describe("/v1/users", () => {
       };
 
       // act
-      const res = await agent.put(`/v1/users/local-profile/${user.id}`).send(updatedData);
+      const res = await agent.put("/v1/users/local-profile").query({ userId: user.id }).send(updatedData);
 
       // assert
       expect(res.status).toBe(409);
@@ -664,7 +664,7 @@ describe("/v1/users", () => {
       };
 
       // act
-      const res = await agent.put(`/v1/users/local-profile/${userToUpdate.id}`).send(updatedData);
+      const res = await agent.put("/v1/users/local-profile").query({ userId: userToUpdate.id }).send(updatedData);
 
       // assert
       expect(res.status).toBe(409);
@@ -687,7 +687,7 @@ describe("/v1/users", () => {
       };
 
       // act
-      const res = await agent.put(`/v1/users/local-profile/${userToUpdate.id}`).send(updatedData);
+      const res = await agent.put("/v1/users/local-profile").query({ userId: userToUpdate.id }).send(updatedData);
 
       // assert
       expect(res.status).toBe(409);
@@ -707,7 +707,7 @@ describe("/v1/users", () => {
       };
 
       // act
-      const res = await agent.put(`/v1/users/local-profile/${userToUpdate.id}`).send(updatedData);
+      const res = await agent.put("/v1/users/local-profile").query({ userId: userToUpdate.id }).send(updatedData);
 
       // assert
       expect(res.status).toBe(409);
@@ -731,7 +731,7 @@ describe("/v1/users", () => {
       };
 
       // act
-      const res = await agent.put(`/v1/users/local-profile/${userToUpdate.id}`).send(updatedData);
+      const res = await agent.put("/v1/users/local-profile").query({ userId: userToUpdate.id }).send(updatedData);
 
       // assert
       expect(res.status).toBe(409);
