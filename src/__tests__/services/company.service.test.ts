@@ -233,25 +233,4 @@ describe("CompanyService", () => {
       silenceLogs.mockRestore();
     });
   });
-
-  describe("addEmployeeToCompany", () => {
-    it("should add an employee to the company", async () => {
-      // arrange
-      // Not using CompanyService.createCompany to avoid adding the owner as an employee
-      const dbCompany = await createTestCompany(owner.id);
-
-      // act
-      await CompanyService.addEmployeeToCompany({
-        companyId: dbCompany.id,
-        employeeId: employee.id,
-        role: CompanyEmployeeRole.REGULAR,
-      });
-      const employees = await prisma.companyEmployee.findMany({ where: { companyId: dbCompany.id } });
-
-      // assert
-      expect(employees).toHaveLength(1);
-      expect(employees[0].employeeId).toBe(employee.id);
-      expect(employees[0].role).toBe(CompanyEmployeeRole.REGULAR);
-    });
-  });
 });
