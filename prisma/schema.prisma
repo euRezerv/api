@@ -12,16 +12,17 @@ datasource db {
 }
 
 model User {
-  id                      String                 @id @default(cuid())
-  localProfile            LocalProfile?          @relation
-  googleProfile           GoogleProfile?         @relation
+  id                      String                      @id @default(cuid())
+  localProfile            LocalProfile?               @relation
+  googleProfile           GoogleProfile?              @relation
   companies               CompanyEmployee[]
   bookings                BookingCustomer[]
-  createdCompanies        Company[]              @relation("CreatedCompanies")
+  createdCompanies        Company[]                   @relation("CreatedCompanies")
+  receivedCompanyInvites  CompanyEmployeeInvitation[]
   updatedCompaniesHistory CompanyUpdateHistory[]
-  createdAt               DateTime               @default(now()) @db.Timestamptz(6)
-  updatedAt               DateTime               @updatedAt @db.Timestamptz(6)
-  deletedAt               DateTime?              @db.Timestamptz(6)
+  createdAt               DateTime                    @default(now()) @db.Timestamptz(6)
+  updatedAt               DateTime                    @updatedAt @db.Timestamptz(6)
+  deletedAt               DateTime?                   @db.Timestamptz(6)
 }
 
 model LocalProfile {
@@ -79,15 +80,38 @@ enum CompanyEmployeeRole {
 }
 
 model CompanyEmployee {
-  id                String              @id @default(cuid())
+  id                String                      @id @default(cuid())
   companyId         String
-  company           Company             @relation(fields: [companyId], references: [id])
+  company           Company                     @relation(fields: [companyId], references: [id])
   employeeId        String
-  employee          User                @relation(fields: [employeeId], references: [id])
+  employee          User                        @relation(fields: [employeeId], references: [id])
   role              CompanyEmployeeRole
   assignedResources ResourceEmployee[]
+  sentInvitations   CompanyEmployeeInvitation[]
 
   @@unique([companyId, employeeId])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+  EXPIRED
+}
+
+model CompanyEmployeeInvitation {
+  id            String              @id @default(cuid())
+  senderId      String
+  sender        CompanyEmployee     @relation(fields: [senderId], references: [id])
+  invitedUserId String
+  invitedUser   User                @relation(fields: [invitedUserId], references: [id])
+  role          CompanyEmployeeRole
+  status        InvitationStatus    @default(PENDING)
+  createdAt     DateTime            @default(now()) @db.Timestamptz(6)
+  expiresAt     DateTime            @db.Timestamptz(6)
+
+  @@unique([senderId, invitedUserId, status])
 }
 
 model CompanyUpdateHistory {
