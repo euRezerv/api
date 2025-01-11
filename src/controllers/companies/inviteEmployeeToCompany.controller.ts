@@ -17,7 +17,7 @@ export const inviteEmployeeToCompany = async (
     RequestWithBody<InviteEmployeeToCompanyRequestType["body"]>,
   res: Response<InviteEmployeeToCompanyResponseType>
 ) => {
-  const { id: companyId } = req.params;
+  const { companyId } = req.params;
   const { invitedUserId, role } = req.body;
   const expiresInMillis = ms.weeks(1);
 

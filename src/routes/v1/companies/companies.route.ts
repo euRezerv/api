@@ -51,9 +51,9 @@ CompaniesDocs.add({
   },
 });
 
-router.get("/:id", isAuthenticated, validateGetCompanyById, getCompanyById);
+router.get("/:companyId", isAuthenticated, validateGetCompanyById, getCompanyById);
 CompaniesDocs.add({
-  "/v1/companies/{id}": {
+  "/v1/companies/{companyId}": {
     get: {
       summary: "Get a company by id",
       tags: ["Companies"],
@@ -61,7 +61,7 @@ CompaniesDocs.add({
       parameters: [
         {
           in: "path",
-          name: "id",
+          name: "companyId",
           required: true,
           schema: { type: "string" },
           description: "Company id",
@@ -78,11 +78,11 @@ CompaniesDocs.add({
   },
 });
 
-// router.get("/:id/employees", (req, res) => {
+// router.get("/:companyId/employees", (req, res) => {
 //   res.status(501).send("Not implemented");
 // });
 // CompaniesDocs.add({
-//   "/v1/companies/{id}/employees": {
+//   "/v1/companies/{companyId}/employees": {
 //     get: {
 //       summary: "Get company employees",
 //       tags: ["Companies"],

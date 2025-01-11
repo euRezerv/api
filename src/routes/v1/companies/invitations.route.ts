@@ -8,9 +8,9 @@ import { inviteEmployeeToCompany } from "src/controllers/companies/inviteEmploye
 const router = Router();
 const CompanyInvitationDocs = new SwaggerDocsManager();
 
-router.post("/:id/invitations", isAuthenticated, validateInviteEmployeeToCompany, inviteEmployeeToCompany);
+router.post("/:companyId/invitations", isAuthenticated, validateInviteEmployeeToCompany, inviteEmployeeToCompany);
 CompanyInvitationDocs.add({
-  "/v1/companies/{id}/invitations": {
+  "/v1/companies/{companyId}/invitations": {
     post: {
       summary: "Invite employee to company",
       tags: ["Company Invitations"],
@@ -18,7 +18,7 @@ CompanyInvitationDocs.add({
       parameters: [
         {
           in: "path",
-          name: "id",
+          name: "companyId",
           required: true,
           schema: { type: "string" },
           description: "Company id",
@@ -39,6 +39,8 @@ CompanyInvitationDocs.add({
     },
   },
 });
+
+router.post("/:id/invitations", isAuthenticated);
 
 export { CompanyInvitationDocs };
 export default router;

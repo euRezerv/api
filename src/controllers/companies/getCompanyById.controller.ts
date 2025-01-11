@@ -12,7 +12,7 @@ export const getCompanyById = async (
   res: Response<GetCompanyByIdResponseType>
 ) => {
   try {
-    const { id: companyId } = req.params;
+    const { companyId } = req.params;
 
     let company;
     try {

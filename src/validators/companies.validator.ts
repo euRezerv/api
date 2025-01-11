@@ -6,7 +6,7 @@ import { standardResponse } from "@utils/responses";
 import { CompanyEmployeeRole } from "@prisma/client";
 
 export const validateGetCompanyById: RequestHandler[] = [
-  param("id")
+  param("companyId")
     .not()
     .isEmpty({ ignore_whitespace: true })
     .withMessage("Company ID is required")
@@ -119,7 +119,7 @@ export const validateCreateCompany: RequestHandler[] = [
 ];
 
 export const validateInviteEmployeeToCompany: RequestHandler[] = [
-  param("id")
+  param("companyId")
     .not()
     .isEmpty({ ignore_whitespace: true })
     .withMessage("Company ID is required")
