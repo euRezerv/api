@@ -22,7 +22,7 @@ describe("CompanyEmployeeService", () => {
       // act
       await CompanyEmployeeService.addEmployeeToCompany({
         companyId: dbCompany.id,
-        employeeId: employee.id,
+        userId: employee.id,
         role: CompanyEmployeeRole.REGULAR,
       });
       const employees = await prisma.companyEmployee.findMany({ where: { companyId: dbCompany.id } });
