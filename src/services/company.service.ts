@@ -56,7 +56,7 @@ export default class CompanyService {
 
       await CompanyEmployeeService.addEmployeeToCompany({
         companyId: company.id,
-        employeeId: createdById,
+        userId: createdById,
         role: CompanyEmployeeRole.OWNER,
       });
 

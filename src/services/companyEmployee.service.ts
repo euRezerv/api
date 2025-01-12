@@ -1,4 +1,4 @@
-import { CompanyEmployeeRole, InvitationStatus } from "@prisma/client";
+import { CompanyEmployeeRole, InvitationStatus, Prisma } from "@prisma/client";
 import { normalizeError } from "@toolbox/common/errors";
 import log from "@utils/logger";
 import prisma from "@utils/prisma";
@@ -9,13 +9,14 @@ type GetCompanyEmployeeInvitationProps = {
   role?: CompanyEmployeeRole[];
   status?: InvitationStatus[];
 };
+type UpdateCompanyEmployeeInvitationProps = { invitationId: string; data: Prisma.CompanyEmployeeInvitationUpdateInput };
 type CreateCompanyEmployeeInvitationProps = {
   senderId: string;
   invitedUserId: string;
   role: CompanyEmployeeRole;
   expiresInMillis: number;
 };
-type AddEmployeeToCompanyProps = { companyId: string; employeeId: string; role: CompanyEmployeeRole };
+type AddEmployeeToCompanyProps = { companyId: string; userId: string; role: CompanyEmployeeRole };
 
 export default class CompanyEmployeeService {
   static async getCompanyEmployee(companyId: string, userId: string) {
@@ -26,6 +27,19 @@ export default class CompanyEmployeeService {
             companyId,
             employeeId: userId,
           },
+        },
+      });
+    } catch (error) {
+      log.error(error);
+      throw normalizeError(error);
+    }
+  }
+
+  static async getCompanyEmployeeInvitationById(invitationId: string) {
+    try {
+      return await prisma.companyEmployeeInvitation.findUnique({
+        where: {
+          id: invitationId,
         },
       });
     } catch (error) {
@@ -73,12 +87,26 @@ export default class CompanyEmployeeService {
     }
   }
 
-  static async addEmployeeToCompany({ companyId, employeeId, role }: AddEmployeeToCompanyProps) {
+  static async updateCompanyEmployeeInvitation({ invitationId, data }: UpdateCompanyEmployeeInvitationProps) {
+    try {
+      const invitation = await prisma.companyEmployeeInvitation.update({
+        where: { id: invitationId },
+        data,
+      });
+
+      return invitation;
+    } catch (error) {
+      log.error(error);
+      throw normalizeError(error);
+    }
+  }
+
+  static async addEmployeeToCompany({ companyId, userId, role }: AddEmployeeToCompanyProps) {
     try {
       const companyEmployee = await prisma.companyEmployee.create({
         data: {
           companyId,
-          employeeId,
+          employeeId: userId,
           role,
         },
       });
