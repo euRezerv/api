@@ -1,8 +1,8 @@
 import ms from "milliseconds";
-import { InviteEmployeeToCompanyRequestType } from "@toolbox/request/types/companies";
+import { InviteEmployeeToCompanyRequestType } from "@toolbox/request/types/companies/invitations";
 import { RequestWithBody, RequestWithPath } from "@toolbox/request/types/types";
 import { standardResponse } from "@utils/responses";
-import { InviteEmployeeToCompanyResponseType } from "@toolbox/response/types/companies";
+import { InviteEmployeeToCompanyResponseType } from "@toolbox/response/types/companies/invitations";
 import { normalizeError } from "@toolbox/common/errors";
 import log from "@utils/logger";
 import { Response } from "express";

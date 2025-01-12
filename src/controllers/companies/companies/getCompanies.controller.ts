@@ -1,7 +1,7 @@
 import { normalizeError } from "@toolbox/common/errors";
-import { GetCompaniesRequestType } from "@toolbox/request/types/companies";
+import { GetCompaniesRequestType } from "@toolbox/request/types/companies/companies";
 import { RequestWithQuery } from "@toolbox/request/types/types";
-import { GetCompaniesResponseType } from "@toolbox/response/types/companies";
+import { GetCompaniesResponseType } from "@toolbox/response/types/companies/companies";
 import log from "@utils/logger";
 import { getPaginationResponse, standardResponse } from "@utils/responses";
 import { Response } from "express";

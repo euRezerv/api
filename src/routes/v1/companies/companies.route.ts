@@ -1,7 +1,11 @@
 import { isAuthenticated } from "../../../middleware/auth.middleware";
 import { addPagination } from "../../../middleware/pagination.middleware";
 import { Router } from "express";
-import { validateCreateCompany, validateGetCompanies, validateGetCompanyById } from "src/validators/companies.validator";
+import {
+  validateCreateCompany,
+  validateGetCompanies,
+  validateGetCompanyById,
+} from "src/validators/companies/companies.validator";
 import { CompanyEmployeeRole } from "@prisma/client";
 import {
   cookieSecurity,
@@ -10,9 +14,9 @@ import {
   paginationQueryParams,
   SwaggerDocsManager,
 } from "@utils/swaggerDocs";
-import { getCompanies } from "src/controllers/companies/getCompanies.controller";
-import { getCompanyById } from "src/controllers/companies/getCompanyById.controller";
-import { createCompany } from "src/controllers/companies/createCompany.controller";
+import { getCompanies } from "src/controllers/companies/companies/getCompanies.controller";
+import { getCompanyById } from "src/controllers/companies/companies/getCompanyById.controller";
+import { createCompany } from "src/controllers/companies/companies/createCompany.controller";
 
 const router = Router();
 const CompaniesDocs = new SwaggerDocsManager();

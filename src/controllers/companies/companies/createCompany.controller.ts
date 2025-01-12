@@ -1,38 +1,50 @@
 import { normalizeError } from "@toolbox/common/errors";
-import { GetCompanyByIdRequestType } from "@toolbox/request/types/companies";
-import { RequestWithPath } from "@toolbox/request/types/types";
-import { GetCompanyByIdResponseType } from "@toolbox/response/types/companies";
+import { CreateCompanyRequestType } from "@toolbox/request/types/companies/companies";
+import { RequestWithBody } from "@toolbox/request/types/types";
+import { CreateCompanyResponseType } from "@toolbox/response/types/companies/companies";
 import log from "@utils/logger";
 import { standardResponse } from "@utils/responses";
 import { Response } from "express";
 import CompanyService from "src/services/company.service";
 
-export const getCompanyById = async (
-  req: RequestWithPath<GetCompanyByIdRequestType["path"]>,
-  res: Response<GetCompanyByIdResponseType>
+export const createCompany = async (
+  req: RequestWithBody<CreateCompanyRequestType["body"]>,
+  res: Response<CreateCompanyResponseType>
 ) => {
   try {
-    const { companyId } = req.params;
+    const { name, country, county, city, street, postalCode, latitude, longitude } = req.body;
+
+    if (!req?.user?.id) {
+      res.status(500).json(standardResponse({ isSuccess: false, res, message: "No user id found" }));
+      return;
+    }
 
     let company;
     try {
-      company = await CompanyService.getCompanyById(companyId);
+      company = await CompanyService.createCompany({
+        createdById: req.user.id,
+        data: {
+          name,
+          country,
+          county,
+          city,
+          street,
+          postalCode,
+          latitude,
+          longitude,
+        },
+      });
     } catch (error) {
       log.error(error);
       res
         .status(500)
         .json(
-          standardResponse({ isSuccess: false, res, message: "Failed to fetch company", errors: normalizeError(error) })
+          standardResponse({ isSuccess: false, res, message: "Failed to create company", errors: normalizeError(error) })
         );
       return;
     }
 
-    if (!company) {
-      res.status(404).json(standardResponse({ isSuccess: false, res, message: "Company not found" }));
-      return;
-    }
-
-    res.status(200).json(
+    res.status(201).json(
       standardResponse({
         isSuccess: true,
         res,
