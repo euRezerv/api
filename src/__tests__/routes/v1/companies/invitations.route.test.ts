@@ -509,4 +509,203 @@ describe("/v1/companies/:id", () => {
       expect(res.body.message).toBe("Invitation not found");
     });
   });
+
+  describe("PATCH /invitations/:invitationId/decline", () => {
+    let authInvitedUser: User;
+    let companyOwner: CompleteUser;
+    let company: Company;
+
+    beforeEach(async () => {
+      authInvitedUser = await createAndAuthTestUser(agent);
+      companyOwner = await createTestUser();
+      company = await createTestCompany(companyOwner.id);
+      await addTestUserToCompany(company.id, companyOwner.id, CompanyEmployeeRole.OWNER);
+    });
+
+    const createTestInvitation = async (
+      role: CompanyEmployeeRole,
+      companyId?: string,
+      senderId?: string,
+      invitedUserId?: string
+    ) => {
+      if ((!!companyId && !senderId) || (!companyId && !!senderId)) {
+        throw new Error("companyId and senderId must both be provided");
+      }
+
+      let senderCompanyEmployee;
+      if (companyId && senderId) {
+        senderCompanyEmployee = await CompanyEmployeeService.getCompanyEmployee(companyId, senderId);
+      } else {
+        senderCompanyEmployee = await CompanyEmployeeService.getCompanyEmployee(company.id, companyOwner.id);
+      }
+
+      return await CompanyEmployeeService.createCompanyEmployeeInvitation({
+        senderId: senderCompanyEmployee!.id,
+        invitedUserId: invitedUserId ?? authInvitedUser.id,
+        role,
+        expiresInMillis: ms.weeks(1),
+      });
+    };
+
+    it("should return a 200 and the updated invitation", async () => {
+      // arrange
+      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
+
+      // act
+      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
+
+      // assert
+      expect(res.status).toBe(200);
+      expect(res.body.isSuccess).toBe(true);
+      expect(res.body.message).toBe("Invitation declined successfully");
+      expect(res.body.data.invitation).toMatchObject({
+        id: invitation.id,
+        status: InvitationStatus.DECLINED,
+      });
+    });
+
+    it("should return a 200 and the updated invitation even if the user already belongs to the company", async () => {
+      // arrange
+      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
+      await addTestUserToCompany(company.id, authInvitedUser.id, CompanyEmployeeRole.REGULAR);
+
+      // act
+      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
+
+      // assert
+      expect(res.status).toBe(200);
+      expect(res.body.isSuccess).toBe(true);
+      expect(res.body.message).toBe("Invitation declined successfully");
+      expect(res.body.data.invitation).toMatchObject({
+        id: invitation.id,
+        status: InvitationStatus.DECLINED,
+      });
+    });
+
+    it("should return a 400 if the invitation is already accepted", async () => {
+      // arrange
+      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
+      await CompanyEmployeeService.updateCompanyEmployeeInvitation({
+        invitationId: invitation.id,
+        data: { status: InvitationStatus.ACCEPTED },
+      });
+
+      // act
+      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
+
+      // assert
+      expect(res.status).toBe(400);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("This invitation has already been accepted");
+    });
+
+    it("should return a 400 if the invitation is already declined", async () => {
+      // arrange
+      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
+      await CompanyEmployeeService.updateCompanyEmployeeInvitation({
+        invitationId: invitation.id,
+        data: { status: InvitationStatus.DECLINED },
+      });
+
+      // act
+      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
+
+      // assert
+      expect(res.status).toBe(400);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("This invitation has already been rejected");
+    });
+
+    it("should return a 400 if the invitation is already cancelled", async () => {
+      // arrange
+      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
+      await CompanyEmployeeService.updateCompanyEmployeeInvitation({
+        invitationId: invitation.id,
+        data: { status: InvitationStatus.CANCELLED },
+      });
+
+      // act
+      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
+
+      // assert
+      expect(res.status).toBe(400);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("This invitation has already been cancelled");
+    });
+
+    it("should return a 400 if the invitation is expired", async () => {
+      // arrange
+      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
+      await CompanyEmployeeService.updateCompanyEmployeeInvitation({
+        invitationId: invitation.id,
+        data: { status: InvitationStatus.EXPIRED },
+      });
+
+      // act
+      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
+
+      // assert
+      expect(res.status).toBe(400);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("This invitation has expired");
+    });
+
+    it("should return a 400 if the invitation expiration date has passed", async () => {
+      jest.useFakeTimers({ doNotFake: ["nextTick", "setImmediate"] }).setSystemTime(new Date("2025-01-01"));
+
+      // arrange
+      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
+      await CompanyEmployeeService.updateCompanyEmployeeInvitation({
+        invitationId: invitation.id,
+        data: { expiresAt: new Date(Date.now() - ms.days(1)) },
+      });
+
+      // act
+      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
+
+      // assert
+      expect(res.status).toBe(400);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("This invitation has expired");
+
+      jest.useRealTimers();
+    });
+
+    it("should return a 403 if the invitation does not belong to the authenticated user", async () => {
+      // arrange
+      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
+      const notInvitedAuthUser = await createAndAuthTestUser(agent);
+
+      // act
+      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
+
+      // assert
+      expect(res.status).toBe(403);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("No invitation found for this user");
+    });
+
+    it("should return a 404 if the company does not exist", async () => {
+      // arrange
+      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
+
+      // act
+      const res = await agent.patch(`${baseUrl}/nonexistent-id/invitations/${invitation.id}/decline`);
+
+      // assert
+      expect(res.status).toBe(404);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("Company not found");
+    });
+
+    it("should return a 404 if the invitation does not exist", async () => {
+      // act
+      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/nonexistent-id/decline`);
+
+      // assert
+      expect(res.status).toBe(404);
+      expect(res.body.isSuccess).toBe(false);
+      expect(res.body.message).toBe("Invitation not found");
+    });
+  });
 });
