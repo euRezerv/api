@@ -74,9 +74,9 @@ model Company {
 }
 
 enum CompanyEmployeeRole {
-  REGULAR
-  MANAGER
-  OWNER
+  REGULAR // Can view resources data
+  MANAGER // Can manage resources data
+  OWNER // Can manage the company data, resources data and company employees (add, remove, update, invite, cancel invites)
 }
 
 model CompanyEmployee {
