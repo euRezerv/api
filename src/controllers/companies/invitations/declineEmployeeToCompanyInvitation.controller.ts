@@ -43,20 +43,50 @@ export const declineEmployeeToCompanyInvitation = async (
     return;
   }
 
-  if (invitation.expiresAt < new Date()) {
-    res.status(400).json(standardResponse({ isSuccess: false, res, message: "This invitation has expired" }));
+  if (
+    invitation.status === InvitationStatus.DECLINED ||
+    invitation.status === InvitationStatus.CANCELLED ||
+    invitation.status === InvitationStatus.EXPIRED ||
+    invitation.expiresAt < new Date()
+  ) {
+    let message: string;
+    switch (invitation.status) {
+      case InvitationStatus.DECLINED:
+        message = "This invitation has already been rejected";
+        break;
+      case InvitationStatus.CANCELLED:
+        message = "This invitation has already been cancelled";
+        break;
+      case InvitationStatus.EXPIRED:
+        message = "This invitation has expired";
+        break;
+      default:
+        message = "This invitation has expired";
+        break;
+    }
+
+    res.status(200).json(
+      standardResponse({
+        isSuccess: true,
+        res,
+        message: message,
+        data: {
+          existingInvitation: {
+            id: invitation.id,
+            senderCompanyEmployeeId: invitation.senderId,
+            invitedUserId: invitation.invitedUserId,
+            role: invitation.role,
+            status: invitation.status,
+            expiresAt: invitation.expiresAt.toISOString(),
+          },
+        },
+      })
+    );
     return;
-  } else if (invitation.status === InvitationStatus.ACCEPTED) {
+  }
+
+  if (invitation.status === InvitationStatus.ACCEPTED) {
     res.status(400).json(standardResponse({ isSuccess: false, res, message: "This invitation has already been accepted" }));
-    return;
-  } else if (invitation.status === InvitationStatus.DECLINED) {
-    res.status(400).json(standardResponse({ isSuccess: false, res, message: "This invitation has already been rejected" }));
-    return;
-  } else if (invitation.status === InvitationStatus.CANCELLED) {
-    res.status(400).json(standardResponse({ isSuccess: false, res, message: "This invitation has already been cancelled" }));
-    return;
-  } else if (invitation.status === InvitationStatus.EXPIRED) {
-    res.status(400).json(standardResponse({ isSuccess: false, res, message: "This invitation has expired" }));
     return;
   }
 

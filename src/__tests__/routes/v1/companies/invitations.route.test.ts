@@ -582,6 +582,94 @@ describe("/v1/companies/:id", () => {
       });
     });
 
+    it("should return a 200 and the existing invitation if the invitation is already declined", async () => {
+      // arrange
+      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
+      await CompanyEmployeeService.updateCompanyEmployeeInvitation({
+        invitationId: invitation.id,
+        data: { status: InvitationStatus.DECLINED },
+      });
+
+      // act
+      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
+
+      // assert
+      expect(res.status).toBe(200);
+      expect(res.body.isSuccess).toBe(true);
+      expect(res.body.message).toBe("This invitation has already been rejected");
+      expect(res.body.data.existingInvitation).toMatchObject({
+        id: invitation.id,
+        status: InvitationStatus.DECLINED,
+      });
+    });
+
+    it("should return a 200 and the existing invitation if the invitation is already cancelled", async () => {
+      // arrange
+      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
+      await CompanyEmployeeService.updateCompanyEmployeeInvitation({
+        invitationId: invitation.id,
+        data: { status: InvitationStatus.CANCELLED },
+      });
+
+      // act
+      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
+
+      // assert
+      expect(res.status).toBe(200);
+      expect(res.body.isSuccess).toBe(true);
+      expect(res.body.message).toBe("This invitation has already been cancelled");
+      expect(res.body.data.existingInvitation).toMatchObject({
+        id: invitation.id,
+        status: InvitationStatus.CANCELLED,
+      });
+    });
+
+    it("should return a 200 and the existing invitation if the invitation is expired", async () => {
+      // arrange
+      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
+      await CompanyEmployeeService.updateCompanyEmployeeInvitation({
+        invitationId: invitation.id,
+        data: { status: InvitationStatus.EXPIRED },
+      });
+
+      // act
+      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
+
+      // assert
+      expect(res.status).toBe(200);
+      expect(res.body.isSuccess).toBe(true);
+      expect(res.body.message).toBe("This invitation has expired");
+      expect(res.body.data.existingInvitation).toMatchObject({
+        id: invitation.id,
+        status: InvitationStatus.EXPIRED,
+      });
+    });
+
+    it("should return a 200 and the existing invitation if the invitation expiration date has passed", async () => {
+      jest.useFakeTimers({ doNotFake: ["nextTick", "setImmediate"] }).setSystemTime(new Date("2025-01-01"));
+
+      // arrange
+      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
+      await CompanyEmployeeService.updateCompanyEmployeeInvitation({
+        invitationId: invitation.id,
+        data: { expiresAt: new Date(Date.now() - ms.days(1)) },
+      });
+
+      // act
+      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
+
+      // assert
+      expect(res.status).toBe(200);
+      expect(res.body.isSuccess).toBe(true);
+      expect(res.body.message).toBe("This invitation has expired");
+      expect(res.body.data.existingInvitation).toMatchObject({
+        id: invitation.id,
+        status: invitation.status,
+      });
+
+      jest.useRealTimers();
+    });
+
     it("should return a 400 if the invitation is already accepted", async () => {
       // arrange
       const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
@@ -597,78 +685,6 @@ describe("/v1/companies/:id", () => {
       expect(res.status).toBe(400);
       expect(res.body.isSuccess).toBe(false);
       expect(res.body.message).toBe("This invitation has already been accepted");
-    });
-
-    it("should return a 400 if the invitation is already declined", async () => {
-      // arrange
-      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
-      await CompanyEmployeeService.updateCompanyEmployeeInvitation({
-        invitationId: invitation.id,
-        data: { status: InvitationStatus.DECLINED },
-      });
-
-      // act
-      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
-
-      // assert
-      expect(res.status).toBe(400);
-      expect(res.body.isSuccess).toBe(false);
-      expect(res.body.message).toBe("This invitation has already been rejected");
-    });
-
-    it("should return a 400 if the invitation is already cancelled", async () => {
-      // arrange
-      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
-      await CompanyEmployeeService.updateCompanyEmployeeInvitation({
-        invitationId: invitation.id,
-        data: { status: InvitationStatus.CANCELLED },
-      });
-
-      // act
-      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
-
-      // assert
-      expect(res.status).toBe(400);
-      expect(res.body.isSuccess).toBe(false);
-      expect(res.body.message).toBe("This invitation has already been cancelled");
-    });
-
-    it("should return a 400 if the invitation is expired", async () => {
-      // arrange
-      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
-      await CompanyEmployeeService.updateCompanyEmployeeInvitation({
-        invitationId: invitation.id,
-        data: { status: InvitationStatus.EXPIRED },
-      });
-
-      // act
-      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
-
-      // assert
-      expect(res.status).toBe(400);
-      expect(res.body.isSuccess).toBe(false);
-      expect(res.body.message).toBe("This invitation has expired");
-    });
-
-    it("should return a 400 if the invitation expiration date has passed", async () => {
-      jest.useFakeTimers({ doNotFake: ["nextTick", "setImmediate"] }).setSystemTime(new Date("2025-01-01"));
-
-      // arrange
-      const invitation = await createTestInvitation(CompanyEmployeeRole.REGULAR);
-      await CompanyEmployeeService.updateCompanyEmployeeInvitation({
-        invitationId: invitation.id,
-        data: { expiresAt: new Date(Date.now() - ms.days(1)) },
-      });
-
-      // act
-      const res = await agent.patch(`${baseUrl}/${company.id}/invitations/${invitation.id}/decline`);
-
-      // assert
-      expect(res.status).toBe(400);
-      expect(res.body.isSuccess).toBe(false);
-      expect(res.body.message).toBe("This invitation has expired");
-
-      jest.useRealTimers();
     });
 
     it("should return a 403 if the invitation does not belong to the authenticated user", async () => {
