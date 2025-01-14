@@ -43,11 +43,29 @@ export const acceptEmployeeToCompanyInvitation = async (
     return;
   }
 
+  if (invitation.status === InvitationStatus.ACCEPTED) {
+    res.status(200).json(
+      standardResponse({
+        isSuccess: true,
+        res,
+        message: "This invitation has already been accepted",
+        data: {
+          existingInvitation: {
+            id: invitation.id,
+            senderCompanyEmployeeId: invitation.senderId,
+            invitedUserId: invitation.invitedUserId,
+            role: invitation.role,
+            status: invitation.status,
+            expiresAt: invitation.expiresAt.toISOString(),
+          },
+        },
+      })
+    );
+    return;
+  }
+
   if (invitation.expiresAt < new Date()) {
     res.status(400).json(standardResponse({ isSuccess: false, res, message: "This invitation has expired" }));
-    return;
-  } else if (invitation.status === InvitationStatus.ACCEPTED) {
-    res.status(400).json(standardResponse({ isSuccess: false, res, message: "This invitation has already been accepted" }));
     return;
   } else if (invitation.status === InvitationStatus.DECLINED) {
     res.status(400).json(standardResponse({ isSuccess: false, res, message: "This invitation has already been rejected" }));
