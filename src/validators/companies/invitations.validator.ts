@@ -97,3 +97,27 @@ export const validateDeclineEmployeeToCompanyInvitation: RequestHandler[] = [
     next();
   },
 ];
+
+export const validateCancelEmployeeToCompanyInvitation: RequestHandler[] = [
+  param("companyId")
+    .not()
+    .isEmpty({ ignore_whitespace: true })
+    .withMessage("Company ID is required")
+    .isString()
+    .withMessage("Company ID must be a string"),
+  param("invitationId")
+    .not()
+    .isEmpty({ ignore_whitespace: true })
+    .withMessage("Invitation ID is required")
+    .isString()
+    .withMessage("Invitation ID must be a string"),
+  (req: Request, res: Response, next: NextFunction) => {
+    const errors = validationResultFormatter(req);
+    if (!isObjectEmpty(errors)) {
+      res.status(400).json(standardResponse({ isSuccess: false, res, message: "Validation error", errors }));
+      return;
+    }
+
+    next();
+  },
+];

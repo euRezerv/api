@@ -2,6 +2,7 @@ import { isAuthenticated } from "../../../middleware/auth.middleware";
 import { Router } from "express";
 import {
   validateAcceptEmployeeToCompanyInvitation,
+  validateCancelEmployeeToCompanyInvitation,
   validateDeclineEmployeeToCompanyInvitation,
   validateInviteEmployeeToCompany,
 } from "src/validators/companies/invitations.validator";
@@ -10,6 +11,7 @@ import { cookieSecurity, HTTP_RESPONSES, jsonRequestBody, SwaggerDocsManager } f
 import { inviteEmployeeToCompany } from "src/controllers/companies/invitations/inviteEmployeeToCompany.controller";
 import { acceptEmployeeToCompanyInvitation } from "src/controllers/companies/invitations/acceptEmployeeToCompanyInvitation.controller";
 import { declineEmployeeToCompanyInvitation } from "src/controllers/companies/invitations/declineEmployeeToCompanyInvitation.controller";
+import { cancelEmployeeToCompanyInvitation } from "src/controllers/companies/invitations/cancelEmployeeToCompanyInvitation.controller";
 
 const router = Router();
 const CompanyInvitationDocs = new SwaggerDocsManager();
@@ -75,7 +77,7 @@ CompanyInvitationDocs.add({
         },
       ],
       responses: {
-        ...HTTP_RESPONSES.OK200({ description: "Invitation accepted" }),
+        ...HTTP_RESPONSES.OK200({ description: "Invitation accepted (or already accepted)" }),
         ...HTTP_RESPONSES.BAD_REQUEST400({ description: "Validation error" }),
         ...HTTP_RESPONSES.UNAUTHORIZED401(),
         ...HTTP_RESPONSES.FORBIDDEN403({ description: "The invitation doesn't belong to the user" }),
@@ -115,10 +117,55 @@ CompanyInvitationDocs.add({
         },
       ],
       responses: {
-        ...HTTP_RESPONSES.OK200({ description: "Invitation declined" }),
+        ...HTTP_RESPONSES.OK200({
+          description: "Invitation declined (or already an employee, or already declined/cancelled/expired)",
+        }),
         ...HTTP_RESPONSES.BAD_REQUEST400({ description: "Validation error" }),
         ...HTTP_RESPONSES.UNAUTHORIZED401(),
         ...HTTP_RESPONSES.FORBIDDEN403({ description: "The invitation doesn't belong to the user" }),
+        ...HTTP_RESPONSES.NOT_FOUND404({ description: "Company or invitation not found" }),
+        ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500({ description: "Internal server error" }),
+      },
+    },
+  },
+});
+
+router.patch(
+  "/:companyId/invitations/:invitationId/cancel",
+  isAuthenticated,
+  validateCancelEmployeeToCompanyInvitation,
+  cancelEmployeeToCompanyInvitation
+);
+CompanyInvitationDocs.add({
+  "/v1/companies/{companyId}/invitations/{invitationId}/cancel": {
+    patch: {
+      summary: "Cancel invitation",
+      description: "Used for a company owner to cancel an invitation for that company",
+      tags: ["Company Invitations"],
+      ...cookieSecurity,
+      parameters: [
+        {
+          in: "path",
+          name: "companyId",
+          required: true,
+          schema: { type: "string" },
+          description: "Company id",
+        },
+        {
+          in: "path",
+          name: "invitationId",
+          required: true,
+          schema: { type: "string" },
+          description: "Invitation id",
+        },
+      ],
+      responses: {
+        ...HTTP_RESPONSES.OK200({
+          description: "Invitation cancelled (or already an employee, or already rejected/cancelled/expired)",
+        }),
+        ...HTTP_RESPONSES.BAD_REQUEST400({ description: "Validation error" }),
+        ...HTTP_RESPONSES.UNAUTHORIZED401(),
+        ...HTTP_RESPONSES.FORBIDDEN403({ description: "The user is not an owner of the company" }),
         ...HTTP_RESPONSES.NOT_FOUND404({ description: "Company or invitation not found" }),
         ...HTTP_RESPONSES.INTERNAL_SERVER_ERROR500({ description: "Internal server error" }),
       },
