@@ -74,9 +74,9 @@ model Company {
 }
 
 enum CompanyEmployeeRole {
-  REGULAR // Can view resources data
-  MANAGER // Can manage resources data
-  OWNER // Can manage the company data, resources data and company employees (add, remove, update, invite, cancel invites)
+  REGULAR
+  MANAGER
+  OWNER
 }
 
 model CompanyEmployee {
@@ -126,13 +126,16 @@ model CompanyUpdateHistory {
 
 enum ResourceCategory {
   //ToDo: Add more categories
-  SPORT_FIELD
+  BEAUTY
+  EDUCATION
+  HEALTH
+  SPORT
 }
 
 model Resource {
   id                      String                 @id @default(cuid())
   name                    String
-  description             String
+  description             String?
   availabilityTime        ResourceAvailability[]
   category                ResourceCategory
   companyId               String
@@ -173,17 +176,32 @@ model ResourceEmployee {
   @@unique([resourceId, employeeId])
 }
 
+enum ServiceSubcategory {
+  /// Beauty
+  HAIR_CUT
+
+  /// Education
+
+  /// Health
+
+  /// Sport
+  BASKETBALL
+  FOOTBALL
+  TENNIS
+}
+
 model Service {
-  id              String    @id @default(cuid())
+  id              String               @id @default(cuid())
   name            String
   description     String
+  subcategories   ServiceSubcategory[]
   price           Float
   durationSeconds Int
   resourceId      String
-  resource        Resource  @relation(fields: [resourceId], references: [id])
+  resource        Resource             @relation(fields: [resourceId], references: [id])
   bookings        Booking[]
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now()) @db.Timestamptz(6)
+  isActive        Boolean              @default(true)
+  createdAt       DateTime             @default(now()) @db.Timestamptz(6)
 }
 
 enum BookingStatus {
