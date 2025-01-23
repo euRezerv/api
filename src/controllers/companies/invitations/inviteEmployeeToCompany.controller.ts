@@ -1,6 +1,6 @@
 import ms from "milliseconds";
 import { InviteEmployeeToCompanyRequestType } from "@toolbox/request/types/companies/invitations";
-import { RequestWithBody, RequestWithPath } from "@toolbox/request/types/types";
+import { RequestWithPathAndBody } from "@toolbox/request/types/types";
 import { standardResponse } from "@utils/responses";
 import { InviteEmployeeToCompanyResponseType } from "@toolbox/response/types/companies/invitations";
 import { normalizeError } from "@toolbox/common/errors";
@@ -11,10 +11,10 @@ import { Company, CompanyEmployee, CompanyEmployeeInvitation, InvitationStatus }
 import { CompleteUser } from "src/globalTypes";
 import UserService from "src/services/user.service";
 import CompanyEmployeeService from "src/services/companyEmployee.service";
+import { employeeAccess } from "src/validators/companies/employeeAccess";
 
 export const inviteEmployeeToCompany = async (
-  req: RequestWithPath<InviteEmployeeToCompanyRequestType["path"]> &
-    RequestWithBody<InviteEmployeeToCompanyRequestType["body"]>,
+  req: RequestWithPathAndBody<InviteEmployeeToCompanyRequestType["path"], InviteEmployeeToCompanyRequestType["body"]>,
   res: Response<InviteEmployeeToCompanyResponseType>
 ) => {
   const { companyId } = req.params;
@@ -23,7 +23,7 @@ export const inviteEmployeeToCompany = async (
 
   const senderId = req.user?.id;
   if (!senderId) {
-    log.error("No user id found");
+    log.error("No user id found", req);
     res.status(500).json(standardResponse({ isSuccess: false, res, message: "No user id found" }));
     return;
   }
@@ -31,8 +31,8 @@ export const inviteEmployeeToCompany = async (
   let company: Company | null;
   try {
     company = await CompanyService.getCompanyById(companyId);
-  } catch (error) {
-    log.error(error);
+  } catch (error: any) {
+    log.error(error, req);
     res
       .status(500)
       .json(standardResponse({ isSuccess: false, res, message: "Failed to fetch company", errors: normalizeError(error) }));
@@ -46,8 +46,8 @@ export const inviteEmployeeToCompany = async (
   let sender: CompanyEmployee | null;
   try {
     sender = await CompanyEmployeeService.getCompanyEmployee(companyId, senderId);
-  } catch (error) {
-    log.error(error);
+  } catch (error: any) {
+    log.error(error, req);
     res
       .status(500)
       .json(standardResponse({ isSuccess: false, res, message: "Failed to fetch sender", errors: normalizeError(error) }));
@@ -56,7 +56,7 @@ export const inviteEmployeeToCompany = async (
   if (!sender) {
     res.status(404).json(standardResponse({ isSuccess: false, res, message: "Sender must be an employee of the company" }));
     return;
-  } else if (sender.role !== "OWNER") {
+  } else if (!employeeAccess(sender.role).canInviteEmployeeToCompany) {
     res
       .status(403)
       .json(
@@ -68,8 +68,8 @@ export const inviteEmployeeToCompany = async (
   let invitedUser: CompleteUser | null;
   try {
     invitedUser = await UserService.getUserById(invitedUserId);
-  } catch (error) {
-    log.error(error);
+  } catch (error: any) {
+    log.error(error, req);
     res
       .status(500)
       .json(
@@ -85,8 +85,8 @@ export const inviteEmployeeToCompany = async (
   let invitedUserCompany: CompanyEmployee | null;
   try {
     invitedUserCompany = await CompanyEmployeeService.getCompanyEmployee(companyId, invitedUserId);
-  } catch (error) {
-    log.error(error);
+  } catch (error: any) {
+    log.error(error, req);
     res.status(500).json(
       standardResponse({
         isSuccess: false,
@@ -111,8 +111,8 @@ export const inviteEmployeeToCompany = async (
       invitedUserId: invitedUser.id,
       status: [InvitationStatus.PENDING],
     });
-  } catch (error) {
-    log.error(error);
+  } catch (error: any) {
+    log.error(error, req);
     res.status(500).json(
       standardResponse({
         isSuccess: false,
@@ -136,8 +136,8 @@ export const inviteEmployeeToCompany = async (
       role: role,
       expiresInMillis: expiresInMillis,
     });
-  } catch (error) {
-    log.error(error);
+  } catch (error: any) {
+    log.error(error, req);
     res
       .status(500)
       .json(

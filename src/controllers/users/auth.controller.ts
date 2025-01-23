@@ -73,7 +73,7 @@ export const logoutUser = (req: Request, res: Response) => {
 
   req.logout((err) => {
     if (err) {
-      log.error(err);
+      log.error(err, req);
       return res
         .status(500)
         .json(standardResponse({ isSuccess: false, res, message: "Failed to logout", errors: normalizeError(err) }));
@@ -146,7 +146,7 @@ export const registerUser = async (
         password: hashedPassword,
       },
     }).catch((error) => {
-      log.error(error);
+      log.error(error, req);
       throw new Error("Failed to create user");
     });
 
@@ -167,8 +167,8 @@ export const registerUser = async (
         },
       })
     );
-  } catch (error) {
-    log.error(error);
+  } catch (error: any) {
+    log.error(error, req);
     res
       .status(500)
       .json(standardResponse({ isSuccess: false, res, message: "Something went wrong", errors: normalizeError(error) }));

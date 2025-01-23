@@ -2,10 +2,12 @@ import { Company, CompanyEmployee, CompanyEmployeeRole, CompanyEmployeeInvitatio
 import { CancelEmployeeToCompanyInvitationRequestType } from "@toolbox/request/types/companies/invitations";
 import { RequestWithPath } from "@toolbox/request/types/types";
 import { CancelEmployeeToCompanyInvitationResponseType } from "@toolbox/response/types/companies/invitations";
+import log from "@utils/logger";
 import { standardResponse } from "@utils/responses";
 import { Response } from "express";
 import CompanyService from "src/services/company.service";
 import CompanyEmployeeService from "src/services/companyEmployee.service";
+import { employeeAccess } from "src/validators/companies/employeeAccess";
 
 export const cancelEmployeeToCompanyInvitation = async (
   req: RequestWithPath<CancelEmployeeToCompanyInvitationRequestType["path"]>,
@@ -15,6 +17,7 @@ export const cancelEmployeeToCompanyInvitation = async (
   const userId = req.user?.id;
 
   if (!userId) {
+    log.error("No user id found", req);
     res.status(500).json(standardResponse({ isSuccess: false, res, message: "No user id found" }));
     return;
   }
@@ -22,7 +25,8 @@ export const cancelEmployeeToCompanyInvitation = async (
   let company: Company | null;
   try {
     company = await CompanyService.getCompanyById(companyId);
-  } catch {
+  } catch (err: any) {
+    log.error(err, req);
     res.status(500).json(standardResponse({ isSuccess: false, res, message: "Failed to fetch company" }));
     return;
   }
@@ -34,11 +38,12 @@ export const cancelEmployeeToCompanyInvitation = async (
   let currentCompanyEmployee: CompanyEmployee | null;
   try {
     currentCompanyEmployee = await CompanyEmployeeService.getCompanyEmployee(companyId, userId);
-  } catch {
+  } catch (err: any) {
+    log.error(err, req);
     res.status(500).json(standardResponse({ isSuccess: false, res, message: "Failed to fetch company employee" }));
     return;
   }
-  if (!currentCompanyEmployee || currentCompanyEmployee.role !== CompanyEmployeeRole.OWNER) {
+  if (!currentCompanyEmployee || !employeeAccess(currentCompanyEmployee.role).canCancelEmployeeToCompanyInvitation) {
     res.status(403).json(standardResponse({ isSuccess: false, res, message: "You must be an owner of the company" }));
     return;
   }
@@ -46,7 +51,8 @@ export const cancelEmployeeToCompanyInvitation = async (
   let invitation: CompanyEmployeeInvitation | null;
   try {
     invitation = await CompanyEmployeeService.getCompanyEmployeeInvitationById(invitationId);
-  } catch {
+  } catch (err: any) {
+    log.error(err, req);
     res.status(500).json(standardResponse({ isSuccess: false, res, message: "Failed to fetch invitation" }));
     return;
   }
@@ -108,7 +114,8 @@ export const cancelEmployeeToCompanyInvitation = async (
       invitationId: invitation.id,
       data: { status: InvitationStatus.CANCELLED },
     });
-  } catch {
+  } catch (err: any) {
+    log.error(err, req);
     res.status(500).json(standardResponse({ isSuccess: false, res, message: "Failed to cancel invitation" }));
     return;
   }

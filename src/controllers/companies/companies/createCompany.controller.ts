@@ -34,8 +34,8 @@ export const createCompany = async (
           longitude,
         },
       });
-    } catch (error) {
-      log.error(error);
+    } catch (error: any) {
+      log.error(error, req);
       res
         .status(500)
         .json(
@@ -65,8 +65,8 @@ export const createCompany = async (
         },
       })
     );
-  } catch (error) {
-    log.error(error);
+  } catch (error: any) {
+    log.error(error, req);
     res
       .status(500)
       .json(standardResponse({ isSuccess: false, res, message: "Something went wrong", errors: normalizeError(error) }));

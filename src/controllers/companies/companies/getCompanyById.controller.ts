@@ -17,8 +17,8 @@ export const getCompanyById = async (
     let company;
     try {
       company = await CompanyService.getCompanyById(companyId);
-    } catch (error) {
-      log.error(error);
+    } catch (error: any) {
+      log.error(error, req);
       res
         .status(500)
         .json(
@@ -53,8 +53,8 @@ export const getCompanyById = async (
         },
       })
     );
-  } catch (error) {
-    log.error(error);
+  } catch (error: any) {
+    log.error(error, req);
     res
       .status(500)
       .json(standardResponse({ isSuccess: false, res, message: "Something went wrong", errors: normalizeError(error) }));

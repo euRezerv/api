@@ -1,4 +1,4 @@
-import { RequestWithBody, RequestWithPath, RequestWithQuery } from "@toolbox/request/types/types";
+import { RequestWithBodyAndQuery, RequestWithPath, RequestWithQuery } from "@toolbox/request/types/types";
 import { CreateOrReplaceUserLocalProfileRequestType, GetUserByIdRequestType } from "@toolbox/request/types/users";
 import { standardResponse } from "@utils/responses";
 import {
@@ -22,8 +22,8 @@ export const getCurrentUser = async (req: Request, res: Response<GetCurrentUserR
   let user: CompleteUser | null = null;
   try {
     user = await UserService.getUserById(req.user.id);
-  } catch (error) {
-    log.error(error);
+  } catch (error: any) {
+    log.error(error, req);
     res
       .status(500)
       .json(standardResponse({ isSuccess: false, res, message: "Failed to fetch user", errors: normalizeError(error) }));
@@ -69,8 +69,8 @@ export const getUserById = async (
     let user;
     try {
       user = await UserService.getUserById(userId);
-    } catch (error) {
-      log.error(error);
+    } catch (error: any) {
+      log.error(error, req);
       res
         .status(500)
         .json(standardResponse({ isSuccess: false, res, message: "Failed to fetch user", errors: normalizeError(error) }));
@@ -118,8 +118,8 @@ export const getUserById = async (
         },
       })
     );
-  } catch (error) {
-    log.error(error);
+  } catch (error: any) {
+    log.error(error, req);
     res
       .status(500)
       .json(standardResponse({ isSuccess: false, res, message: "Something went wrong", errors: normalizeError(error) }));
@@ -127,8 +127,10 @@ export const getUserById = async (
 };
 
 export const createOrReplaceUserLocalProfile = async (
-  req: RequestWithBody<CreateOrReplaceUserLocalProfileRequestType["body"]> &
-    RequestWithQuery<CreateOrReplaceUserLocalProfileRequestType["query"]>,
+  req: RequestWithBodyAndQuery<
+    CreateOrReplaceUserLocalProfileRequestType["body"],
+    CreateOrReplaceUserLocalProfileRequestType["query"]
+  >,
   res: Response<CreateOrReplaceUserLocalProfileResponseType>
 ) => {
   const { givenName, familyName, email, phoneNumberCountryISO, phoneNumber } = req.body;
@@ -137,7 +139,7 @@ export const createOrReplaceUserLocalProfile = async (
 
   try {
     if (!userIdToCreateOrReplace) {
-      log.error("Could not find user ID");
+      log.error("Could not find user ID", req);
       res.status(400).json(standardResponse({ isSuccess: false, res, message: "Could not find user ID" }));
       return;
     }
@@ -145,8 +147,8 @@ export const createOrReplaceUserLocalProfile = async (
     let userToCreateOrReplace: CompleteUser | null = null;
     try {
       userToCreateOrReplace = await UserService.getUserById(userIdToCreateOrReplace);
-    } catch (error) {
-      log.error(error);
+    } catch (error: any) {
+      log.error(error, req);
       res
         .status(500)
         .json(standardResponse({ isSuccess: false, res, message: "Failed to fetch user", errors: normalizeError(error) }));
@@ -225,14 +227,14 @@ export const createOrReplaceUserLocalProfile = async (
           },
         })
       );
-    } catch (error) {
-      log.error(error);
+    } catch (error: any) {
+      log.error(error, req);
       res
         .status(500)
         .json(standardResponse({ isSuccess: false, res, message: "Failed to update user", errors: normalizeError(error) }));
     }
-  } catch (error) {
-    log.error(error);
+  } catch (error: any) {
+    log.error(error, req);
     res
       .status(500)
       .json(standardResponse({ isSuccess: false, res, message: "Something went wrong", errors: normalizeError(error) }));

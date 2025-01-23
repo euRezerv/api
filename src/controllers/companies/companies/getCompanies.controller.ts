@@ -29,8 +29,8 @@ export const getCompanies = async (
     let companies = [];
     try {
       companies = await CompanyService.getAllCompanies({ filters: constraints, skip, take });
-    } catch (error) {
-      log.error(error);
+    } catch (error: any) {
+      log.error(error, req);
       res
         .status(500)
         .json(
@@ -42,8 +42,8 @@ export const getCompanies = async (
     let totalCount;
     try {
       totalCount = await CompanyService.getCompaniesCount({ filters: constraints });
-    } catch (error) {
-      log.error(error);
+    } catch (error: any) {
+      log.error(error, req);
       res.status(500).json(
         standardResponse({
           isSuccess: false,
@@ -77,8 +77,8 @@ export const getCompanies = async (
         },
       })
     );
-  } catch (error) {
-    log.error(error);
+  } catch (error: any) {
+    log.error(error, req);
     res
       .status(500)
       .json(standardResponse({ isSuccess: false, res, message: "Something went wrong", errors: normalizeError(error) }));
