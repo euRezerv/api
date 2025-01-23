@@ -213,7 +213,7 @@ describe("addPagination", () => {
   ];
 
   validationTestCases.forEach(({ name, query, expectedErrors }) => {
-    it(`should return a 400 if ${name}`, async () => {
+    it(`should return 400 if ${name}`, async () => {
       // act
       const res = await agent.get(baseUrl).query(query);
 

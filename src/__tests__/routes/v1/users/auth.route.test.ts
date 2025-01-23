@@ -14,7 +14,7 @@ describe("/v1/users/auth", () => {
   });
 
   describe("POST /login", () => {
-    it("should return a 200 if the login is successful", async () => {
+    it("should return 200 if the login is successful", async () => {
       // arrange
       const email = "myemail@test.com";
       const password = "Password123!";
@@ -73,7 +73,7 @@ describe("/v1/users/auth", () => {
     ];
 
     payloadValidationTestCases.forEach(({ name, payload, expectedErrors }) => {
-      it(`should return a 400 if ${name}`, async () => {
+      it(`should return 400 if ${name}`, async () => {
         // act
         const res = await agent.post("/v1/users/auth/login").send(payload);
 
@@ -87,7 +87,7 @@ describe("/v1/users/auth", () => {
       });
     });
 
-    it("should return a 401 if identifier (phoneNumber / email) not found", async () => {
+    it("should return 401 if identifier (phoneNumber / email) not found", async () => {
       // act
       const res = await agent
         .post("/v1/users/auth/login")
@@ -102,7 +102,7 @@ describe("/v1/users/auth", () => {
       });
     });
 
-    it("should return a 401 if password is incorrect", async () => {
+    it("should return 401 if password is incorrect", async () => {
       // arrange
       const email = "myemail@test.com";
       const password = "Password123!";
@@ -123,7 +123,7 @@ describe("/v1/users/auth", () => {
   });
 
   describe("POST /logout", () => {
-    it("should return a 200 if the logout is successful", async () => {
+    it("should return 200 if the logout is successful", async () => {
       // arrange
       const email = "myemail@test.com";
       const password = "Password123!";
@@ -142,7 +142,7 @@ describe("/v1/users/auth", () => {
       });
     });
 
-    it("should return a 400 if the user is not logged in", async () => {
+    it("should return 400 if the user is not logged in", async () => {
       // act
       const res = await agent.post("/v1/users/auth/logout");
 
@@ -169,7 +169,7 @@ describe("/v1/users/auth", () => {
       };
     };
 
-    it("should return a 201 if the registration is successful", async () => {
+    it("should return 201 if the registration is successful", async () => {
       // arrange
       const payload = await getRegisterPayload();
 
@@ -259,7 +259,7 @@ describe("/v1/users/auth", () => {
     ];
 
     payloadValidationTestCases.forEach(({ name, getPayload, expectedErrors }) => {
-      it(`should return a 400 if ${name}`, async () => {
+      it(`should return 400 if ${name}`, async () => {
         // arrange
         const payload = await getPayload();
 
@@ -286,7 +286,7 @@ describe("/v1/users/auth", () => {
       });
     });
 
-    it("should return a 400 if the phoneNumber does not match the country code", async () => {
+    it("should return 400 if the phoneNumber does not match the country code", async () => {
       // arrange
       const payload = await getRegisterPayload();
       payload.phoneNumberCountryISO = "RO";
@@ -311,7 +311,7 @@ describe("/v1/users/auth", () => {
       });
     });
 
-    it("should return a 409 if the email already exists", async () => {
+    it("should return 409 if the email already exists", async () => {
       // arrange
       const payload = await getRegisterPayload();
       await createTestUser({ localProfileData: { email: payload.email } });
@@ -327,7 +327,7 @@ describe("/v1/users/auth", () => {
       });
     });
 
-    it("should return a 409 if the email already exists, but the user was soft deleted", async () => {
+    it("should return 409 if the email already exists, but the user was soft deleted", async () => {
       // arrange
       const payload = await getRegisterPayload();
       await createTestUser({ localProfileData: { email: payload.email }, userData: { deletedAt: new Date() } });
@@ -343,7 +343,7 @@ describe("/v1/users/auth", () => {
       });
     });
 
-    it("should return a 409 if the phoneNumber already exists", async () => {
+    it("should return 409 if the phoneNumber already exists", async () => {
       // arrange
       const payload = await getRegisterPayload();
       await createTestUser({ localProfileData: { phoneNumber: payload.phoneNumber } });
@@ -359,7 +359,7 @@ describe("/v1/users/auth", () => {
       });
     });
 
-    it("should return a 409 if the phoneNumber already exists, but the user was soft deleted", async () => {
+    it("should return 409 if the phoneNumber already exists, but the user was soft deleted", async () => {
       // arrange
       const payload = await getRegisterPayload();
       await createTestUser({ localProfileData: { phoneNumber: payload.phoneNumber }, userData: { deletedAt: new Date() } });
@@ -375,7 +375,7 @@ describe("/v1/users/auth", () => {
       });
     });
 
-    it("should return a 500 if an error occurs while creating the user", async () => {
+    it("should return 500 if an error occurs while creating the user", async () => {
       const silenceLogs = jest.spyOn(log, "error").mockImplementation();
 
       // arrange
@@ -397,7 +397,7 @@ describe("/v1/users/auth", () => {
   });
 
   describe("GET /google", () => {
-    it("should redirect to Google login", async () => {
+    it("should redire to Google login", async () => {
       // act
       const response = await agent.get("/v1/users/auth/google");
 

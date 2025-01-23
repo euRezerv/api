@@ -38,7 +38,7 @@ describe("/v1/companies", () => {
       createdAt: company.createdAt.toISOString(),
     });
 
-    it("should return a 200 and the (companies and pagination) response", async () => {
+    it("should return 200 and the (companies and pagination) response", async () => {
       // arrange
       const loggedUser = await createAndAuthTestUser(agent);
       const company = await createTestCompany(loggedUser.id);
@@ -55,7 +55,7 @@ describe("/v1/companies", () => {
       expect(res.body.data.pagination).toMatchObject({ currentPage: 1, pageSize, totalCount: 1 });
     });
 
-    it("should return a 200 and all the (companies and pagination) when pagination allows", async () => {
+    it("should return 200 and all the (companies and pagination) when pagination allows", async () => {
       // arrange
       const loggedUser = await createAndAuthTestUser(agent);
       const companies = [
@@ -79,7 +79,7 @@ describe("/v1/companies", () => {
       expect(res.body.data.pagination).toMatchObject({ currentPage: 1, pageSize, totalCount: companies.length });
     });
 
-    it("should return a 200 and the (companies and pagination) specified by pageSize", async () => {
+    it("should return 200 and the (companies and pagination) specified by pageSize", async () => {
       // arrange
       const loggedUser = await createAndAuthTestUser(agent);
       const companies = [
@@ -103,7 +103,7 @@ describe("/v1/companies", () => {
       expect(res.body.data.pagination).toMatchObject({ currentPage: 1, pageSize, totalCount: companies.length });
     });
 
-    it("should return a 200 and the (companies and pagination) specified by pagination", async () => {
+    it("should return 200 and the (companies and pagination) specified by pagination", async () => {
       // arrange
       const loggedUser = await createAndAuthTestUser(agent);
       const companies = [
@@ -128,7 +128,7 @@ describe("/v1/companies", () => {
       expect(res.body.data.pagination).toMatchObject({ currentPage: page, pageSize, totalCount: companies.length });
     });
 
-    it("should return a 200 and (an empty array and pagination) if no companies exist", async () => {
+    it("should return 200 and (an empty array and pagination) if no companies exist", async () => {
       // arrange
       await createAndAuthTestUser(agent);
       const pageSize = 10;
@@ -143,7 +143,7 @@ describe("/v1/companies", () => {
       expect(res.body.data.pagination).toMatchObject({ currentPage: 1, pageSize, totalCount: 0 });
     });
 
-    it("should return a 200 and return only non deleted companies (and count for pagination)", async () => {
+    it("should return 200 and return only non deleted companies (and count for pagination)", async () => {
       // arrange
       const loggedUser = await createAndAuthTestUser(agent);
       await createTestCompany(loggedUser.id, { deletedAt: new Date() });
@@ -161,7 +161,7 @@ describe("/v1/companies", () => {
       expect(res.body.data.pagination).toMatchObject({ currentPage: 1, pageSize, totalCount: 1 });
     });
 
-    it("should return a 200 and (an empty array and pagination) if the page is out of bounds", async () => {
+    it("should return 200 and (an empty array and pagination) if the page is out of bounds", async () => {
       // arrange
       const loggedUser = await createAndAuthTestUser(agent);
       await createTestCompany(loggedUser.id);
@@ -178,7 +178,7 @@ describe("/v1/companies", () => {
       expect(res.body.data.pagination).toMatchObject({ currentPage: page, pageSize, totalCount: 1 });
     });
 
-    it("should return a 200 and the (companies and pagination) filtered by employeeId", async () => {
+    it("should return 200 and the (companies and pagination) filtered by employeeId", async () => {
       // arrange
       const user1 = await createAndAuthTestUser(agent);
       const company1 = await createTestCompany(user1.id);
@@ -206,7 +206,7 @@ describe("/v1/companies", () => {
       expect(res2.body.data.pagination).toMatchObject({ currentPage: 1, pageSize, totalCount: 1 });
     });
 
-    it("should return a 200 and the (companies and pagination) filtered by employeeId and employeeRole", async () => {
+    it("should return 200 and the (companies and pagination) filtered by employeeId and employeeRole", async () => {
       // arrange
       const user1 = await createAndAuthTestUser(agent);
       const user2 = await createAndAuthTestUser(agent);
@@ -276,7 +276,7 @@ describe("/v1/companies", () => {
     ];
 
     validationTestCases.forEach(({ name, query, expectedErrors }) => {
-      it(`should return a 400 if ${name}`, async () => {
+      it(`should return 400 if ${name}`, async () => {
         // arrange
         await createAndAuthTestUser(agent);
 
@@ -303,7 +303,7 @@ describe("/v1/companies", () => {
   });
 
   describe("GET /:id", () => {
-    it("should return a 200 and the company", async () => {
+    it("should return 200 and the company", async () => {
       // arrange
       const loggedUser = await createAndAuthTestUser(agent);
       const company = await createTestCompany(loggedUser.id);
@@ -329,7 +329,7 @@ describe("/v1/companies", () => {
       });
     });
 
-    it("should return a 404 if the company does not exist", async () => {
+    it("should return 404 if the company does not exist", async () => {
       // arrange
       await createAndAuthTestUser(agent);
 
@@ -348,7 +348,7 @@ describe("/v1/companies", () => {
       return omitKeys(getTestCompanyData(), ["createdAt", "deletedAt"]);
     };
 
-    it("should return a 201 and the created company, and add the owner as an employee", async () => {
+    it("should return 201 and the created company, and add the owner as an employee", async () => {
       // arrange
       const loggedUser = await createAndAuthTestUser(agent);
       const companyData = getPostCompanyData();
@@ -360,6 +360,7 @@ describe("/v1/companies", () => {
       expect(res.status).toBe(201);
       expect(res.body.isSuccess).toBe(true);
       expect(res.body.data.company).toMatchObject({
+        id: expect.any(String),
         name: companyData.name,
         country: companyData.country,
         county: companyData.county,
@@ -429,7 +430,7 @@ describe("/v1/companies", () => {
     ];
 
     validationTestCases.forEach(({ name, companyData, expectedErrors }) => {
-      it(`should return a 400 if ${name}`, async () => {
+      it(`should return 400 if ${name}`, async () => {
         // arrange
         await createAndAuthTestUser(agent);
 
