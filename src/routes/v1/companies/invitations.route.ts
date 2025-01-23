@@ -13,10 +13,10 @@ import { acceptEmployeeToCompanyInvitation } from "src/controllers/companies/inv
 import { declineEmployeeToCompanyInvitation } from "src/controllers/companies/invitations/declineEmployeeToCompanyInvitation.controller";
 import { cancelEmployeeToCompanyInvitation } from "src/controllers/companies/invitations/cancelEmployeeToCompanyInvitation.controller";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 const CompanyInvitationDocs = new SwaggerDocsManager();
 
-router.post("/:companyId/invitations", isAuthenticated, validateInviteEmployeeToCompany, inviteEmployeeToCompany);
+router.post("/", isAuthenticated, validateInviteEmployeeToCompany, inviteEmployeeToCompany);
 CompanyInvitationDocs.add({
   "/v1/companies/{companyId}/invitations": {
     post: {
@@ -49,7 +49,7 @@ CompanyInvitationDocs.add({
 });
 
 router.patch(
-  "/:companyId/invitations/:invitationId/accept",
+  "/:invitationId/accept",
   isAuthenticated,
   validateAcceptEmployeeToCompanyInvitation,
   acceptEmployeeToCompanyInvitation
@@ -89,7 +89,7 @@ CompanyInvitationDocs.add({
 });
 
 router.patch(
-  "/:companyId/invitations/:invitationId/decline",
+  "/:invitationId/decline",
   isAuthenticated,
   validateDeclineEmployeeToCompanyInvitation,
   declineEmployeeToCompanyInvitation
@@ -131,7 +131,7 @@ CompanyInvitationDocs.add({
 });
 
 router.patch(
-  "/:companyId/invitations/:invitationId/cancel",
+  "/:invitationId/cancel",
   isAuthenticated,
   validateCancelEmployeeToCompanyInvitation,
   cancelEmployeeToCompanyInvitation
