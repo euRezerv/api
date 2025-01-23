@@ -27,7 +27,7 @@ export const addPagination = (req: Request, res: Response, next: NextFunction) =
       next();
     })
     .catch((error) => {
-      log.error(error);
+      log.error(error, req);
       res
         .status(500)
         .json(
