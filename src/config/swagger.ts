@@ -7,6 +7,7 @@ import { CompaniesDocs } from "src/routes/v1/companies/companies.route";
 import { AuthDocs } from "src/routes/v1/users/auth.route";
 import { UsersDocs } from "src/routes/v1/users/users.route";
 import { CompanyInvitationDocs } from "src/routes/v1/companies/invitations.route";
+import { ResourcesDocs } from "src/routes/v1/companies/resources.route";
 
 const options: swaggerJSDoc.Options = {
   definition: {
@@ -20,6 +21,7 @@ const options: swaggerJSDoc.Options = {
       ...UsersDocs.getDocs(),
       ...CompaniesDocs.getDocs(),
       ...CompanyInvitationDocs.getDocs(),
+      ...ResourcesDocs.getDocs(),
     },
   },
   apis: ["src/routes/v1/**/*.ts"],
