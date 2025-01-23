@@ -19,6 +19,19 @@ type CreateCompanyEmployeeInvitationProps = {
 type AddEmployeeToCompanyProps = { companyId: string; userId: string; role: CompanyEmployeeRole };
 
 export default class CompanyEmployeeService {
+  static async getCompanyEmployeeById(employeeId: string) {
+    try {
+      return await prisma.companyEmployee.findUnique({
+        where: {
+          id: employeeId,
+        },
+      });
+    } catch (error) {
+      log.error(error);
+      throw normalizeError(error);
+    }
+  }
+
   static async getCompanyEmployee(companyId: string, userId: string) {
     try {
       return await prisma.companyEmployee.findUnique({
