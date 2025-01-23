@@ -1,11 +1,20 @@
 import { createLogger, format, transports } from "winston";
-const { combine, timestamp, printf, colorize } = format;
 import util from "util";
 
-const logFormat = printf(({ level, message, timestamp, stack }) => {
-  const logMessage = typeof message === "object" ? util.inspect(message, { depth: null, colors: true }) : message;
+const { combine, timestamp, printf, colorize } = format;
+const COLORS = {
+  yellow: "\x1b[33m",
+  blue: "\x1b[34m",
+  reset: "\x1b[0m",
+};
 
-  return `--> ${timestamp} [${level}]: ${logMessage} ${stack ? `\nStack Trace: ${stack}` : ""}`;
+const logFormat = printf(({ level, message, timestamp, stack, ...meta }) => {
+  const logMessage = typeof message === "object" ? util.inspect(message, { depth: null, colors: true }) : message;
+  const stackTrace = stack ? `\nStack Trace: ${stack}` : "";
+  const requestURL =
+    meta?.method && meta?.originalUrl ? ` [${COLORS.yellow}${meta.method} - ${meta.originalUrl}${COLORS.reset}]` : "";
+
+  return `--> ${COLORS.blue}${timestamp}${COLORS.reset} [${level}]${requestURL}: ${logMessage} ${stackTrace}`;
 });
 
 const log = createLogger({
